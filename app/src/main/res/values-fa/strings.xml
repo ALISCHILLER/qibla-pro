@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">قبله‌نما پرو</string>
+
+    <!-- Common -->
+    <string name="ok">تأیید</string>
+    <string name="cancel">لغو</string>
+    <string name="save">ذخیره</string>
+    <string name="loading">در حال بارگذاری…</string>
+
+    <!-- Bottom tabs -->
+    <string name="tab_compass">قبله‌نما</string>
+    <string name="tab_map">نقشه</string>
+    <string name="tab_settings">تنظیمات</string>
+
+    <!-- Permission -->
+    <string name="permission_title">دسترسی به موقعیت</string>
+    <string name="permission_message">برای محاسبه دقیق قبله، دسترسی به موقعیت شما لازم است.\n\nتمام محاسبات فقط روی دستگاه انجام می‌شود.</string>
+    <string name="grant_permission">اعطای دسترسی</string>
+    <string name="permission_denied">دسترسی رد شد</string>
+    <string name="open_settings">رفتن به تنظیمات</string>
+
+    <!-- GPS dialog -->
+    <string name="gps_disabled_title">GPS غیرفعال است</string>
+    <string name="gps_disabled_msg">برای دقت بهتر، لطفاً GPS را فعال کنید.\n\nدقت محاسبه قبله به شکل محسوسی افزایش می‌یابد.</string>
+    <string name="enable_gps">فعال‌سازی GPS</string>
+    <string name="later">بعداً</string>
+
+    <!-- Compass -->
+    <string name="facing_qibla">روی قبله هستید ✅</string>
+    <string name="rotate_to_qibla">برای قبله %1$d° بچرخید</string>
+
+    <!-- Info labels -->
+    <string name="qibla_direction">زاویه قبله</string>
+    <string name="distance_to_kaaba">فاصله تا کعبه</string>
+    <string name="accuracy">دقت</string>
+    <string name="altitude">ارتفاع</string>
+    <string name="latitude">عرض جغرافیایی</string>
+    <string name="longitude">طول جغرافیایی</string>
+
+    <!-- Settings -->
+    <string name="settings">تنظیمات</string>
+    <string name="compass_settings">تنظیمات قطب‌نما</string>
+
+    <string name="use_true_north">استفاده از شمال واقعی</string>
+    <string name="true_north_desc">تصحیح انحراف مغناطیسی برای دقت بیشتر</string>
+
+    <string name="angle_smoothing">نرم‌سازی زاویه</string>
+    <string name="smoothing_desc">جلوگیری از پرش ناگهانی عقربه</string>
+
+    <string name="alignment_sensitivity">حساسیت هم‌ترازی</string>
+    <string name="sensitivity_desc">آستانه تشخیص «روی قبله»</string>
+
+    <!-- Settings: Location section -->
+    <string name="gps_section">موقعیت</string>
+    <string name="gps_prompt_title">هشدار فعال‌سازی GPS</string>
+    <string name="low_power_location">موقعیت کم‌مصرف</string>
+
+    <!-- Settings: Battery -->
+    <string name="battery_saver">صرفه‌جویی باتری</string>
+    <string name="battery_saver_mode">حالت کم‌مصرف</string>
+    <string name="bg_update_frequency">فاصله بروزرسانی پس‌زمینه</string>
+
+    <!-- Optional / future -->
+    <string name="battery_tips_title">نکات صرفه‌جویی باتری</string>
+    <string name="calibration_guide">راهنمای کالیبراسیون</string>
+    <string name="auto_calibration">کالیبراسیون خودکار</string>
+</resources>

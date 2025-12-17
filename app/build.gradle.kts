@@ -14,16 +14,20 @@ android {
         applicationId = "com.msa.qiblapro"
         minSdk = 28
         targetSdk = 36
-
         versionCode = 1
         versionName = "1.0.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        resourceConfigurations += listOf("fa", "ar", "en", "fa-rIR")
-
+        // Google Maps Key from local.properties
         manifestPlaceholders["MAPS_API_KEY"] =
             (project.findProperty("MAPS_API_KEY") as String?) ?: ""
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables { useSupportLibrary = true }
+    }
+
+    // ✅ جایگزین resourceConfigurations
+    androidResources {
+        localeFilters += listOf("fa", "ar", "en", "fa-rIR")
     }
 
     buildTypes {
@@ -31,16 +35,15 @@ android {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-DEBUG"
             isMinifyEnabled = false
-            isDebuggable = true
         }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("debug") // فعلاً برای تست
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug") // برای تست
         }
     }
 
@@ -48,6 +51,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
         jvmTarget = "17"
         freeCompilerArgs += listOf(
@@ -77,44 +81,40 @@ android {
 }
 
 dependencies {
-    // Core
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.splashscreen)
+    implementation(libs.androidx.window)
+
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.splashscreen)
+    implementation(libs.androidx.activity.compose)
 
-    // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose)
     debugImplementation(libs.bundles.compose.debug)
 
-    // Navigation
     implementation(libs.androidx.navigation.compose)
 
-    // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
-    // DataStore
     implementation(libs.androidx.datastore.preferences)
-
-    // Coroutines
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.coroutines.play.services)
 
-    // Location + Maps
     implementation(libs.play.services.location)
+    implementation(libs.play.services.maps) // اگر خواستی می‌تونی حذفش کنی
     implementation(libs.maps.compose)
 
-    // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.bundles.compose.android.test)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 }
 
-kapt { correctErrorTypes = true }
+kapt {
+    correctErrorTypes = true
+}

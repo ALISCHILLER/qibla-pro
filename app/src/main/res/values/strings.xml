@@ -1,3 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">GiblaPro</string>
+    <string name="app_name">Qibla Pro</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="loading">Loading…</string>
+
+    <!-- Bottom tabs -->
+    <string name="tab_compass">Compass</string>
+    <string name="tab_map">Map</string>
+    <string name="tab_settings">Settings</string>
+
+    <!-- Permission -->
+    <string name="permission_title">Location access</string>
+    <string name="permission_message">To calculate Qibla accurately, we need access to your location.\n\nAll calculations are done locally on your device.</string>
+    <string name="grant_permission">Grant access</string>
+    <string name="permission_denied">Permission denied</string>
+    <string name="open_settings">Open settings</string>
+
+    <!-- GPS dialog -->
+    <string name="gps_disabled_title">Location is off</string>
+    <string name="gps_disabled_msg">For better accuracy, please enable GPS.\n\nAccuracy can improve significantly.</string>
+    <string name="enable_gps">Enable GPS</string>
+    <string name="later">Later</string>
+
+    <!-- Compass -->
+    <string name="facing_qibla">Facing Qibla ✅</string>
+    <string name="rotate_to_qibla">Rotate %1$d° to face Qibla</string>
+
+    <!-- Info labels -->
+    <string name="qibla_direction">Qibla angle</string>
+    <string name="distance_to_kaaba">Distance to Kaaba</string>
+    <string name="accuracy">Accuracy</string>
+    <string name="altitude">Altitude</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="compass_settings">Compass</string>
+
+    <string name="use_true_north">Use True North</string>
+    <string name="true_north_desc">Apply magnetic declination correction</string>
+
+    <string name="angle_smoothing">Angle smoothing</string>
+    <string name="smoothing_desc">Reduce needle jitter</string>
+
+    <string name="alignment_sensitivity">Alignment tolerance</string>
+    <string name="sensitivity_desc">Threshold for “Facing Qibla”</string>
+
+    <!-- Settings: Location section -->
+    <string name="gps_section">Location</string>
+    <string name="gps_prompt_title">GPS enable prompt</string>
+    <string name="low_power_location">Low power location</string>
+
+    <!-- Settings: Battery -->
+    <string name="battery_saver">Battery saver</string>
+    <string name="battery_saver_mode">Battery saver mode</string>
+    <string name="bg_update_frequency">Background update interval</string>
+
+    <!-- Optional / future -->
+    <string name="battery_tips_title">Battery tips</string>
+    <string name="calibration_guide">Calibration guide</string>
+    <string name="auto_calibration">Auto calibration</string>
 </resources>

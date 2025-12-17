@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">بوصلة القبلة برو</string>
+
+    <!-- Common -->
+    <string name="ok">موافق</string>
+    <string name="cancel">إلغاء</string>
+    <string name="save">حفظ</string>
+    <string name="loading">جارٍ التحميل…</string>
+
+    <!-- Bottom tabs -->
+    <string name="tab_compass">البوصلة</string>
+    <string name="tab_map">الخريطة</string>
+    <string name="tab_settings">الإعدادات</string>
+
+    <!-- Permission -->
+    <string name="permission_title">إذن الموقع</string>
+    <string name="permission_message">لحساب اتجاه القبلة بدقة، نحتاج إلى إذن الوصول لموقعك.\n\nجميع الحسابات تتم محليًا على جهازك.</string>
+    <string name="grant_permission">منح الإذن</string>
+    <string name="permission_denied">تم رفض الإذن</string>
+    <string name="open_settings">فتح الإعدادات</string>
+
+    <!-- GPS dialog -->
+    <string name="gps_disabled_title">الموقع غير مفعّل</string>
+    <string name="gps_disabled_msg">لتحسين الدقة، يرجى تفعيل GPS.\n\nقد تتحسن الدقة بشكل ملحوظ.</string>
+    <string name="enable_gps">تفعيل GPS</string>
+    <string name="later">لاحقًا</string>
+
+    <!-- Compass -->
+    <string name="facing_qibla">أنت باتجاه القبلة ✅</string>
+    <string name="rotate_to_qibla">قم بالدوران %1$d° نحو القبلة</string>
+
+    <!-- Info labels -->
+    <string name="qibla_direction">زاوية القبلة</string>
+    <string name="distance_to_kaaba">المسافة إلى الكعبة</string>
+    <string name="accuracy">الدقة</string>
+    <string name="altitude">الارتفاع</string>
+    <string name="latitude">خط العرض</string>
+    <string name="longitude">خط الطول</string>
+
+    <!-- Settings -->
+    <string name="settings">الإعدادات</string>
+    <string name="compass_settings">البوصلة</string>
+
+    <string name="use_true_north">استخدام الشمال الحقيقي</string>
+    <string name="true_north_desc">تصحيح الانحراف المغناطيسي</string>
+
+    <string name="angle_smoothing">تنعيم الزاوية</string>
+    <string name="smoothing_desc">تقليل اهتزاز المؤشر</string>
+
+    <string name="alignment_sensitivity">هامش المحاذاة</string>
+    <string name="sensitivity_desc">عتبة “اتجاه القبلة”</string>
+
+    <!-- Settings: Location section -->
+    <string name="gps_section">الموقع</string>
+    <string name="gps_prompt_title">تنبيه تفعيل GPS</string>
+    <string name="low_power_location">موقع منخفض الاستهلاك</string>
+
+    <!-- Settings: Battery -->
+    <string name="battery_saver">توفير البطارية</string>
+    <string name="battery_saver_mode">وضع توفير البطارية</string>
+    <string name="bg_update_frequency">فاصل تحديث الخلفية</string>
+
+    <!-- Optional / future -->
+    <string name="battery_tips_title">نصائح توفير البطارية</string>
+    <string name="calibration_guide">دليل المعايرة</string>
+    <string name="auto_calibration">المعايرة التلقائية</string>
+</resources>
