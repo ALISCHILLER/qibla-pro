@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,14 @@ plugins {
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.hilt.android)
 }
+
+// ✅ اگر واقعاً می‌خوای از local.properties بخونی، findProperty کافی نیست.
+// local.properties رو دستی لود کن:
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+val mapsApiKey: String = localProps.getProperty("MAPS_API_KEY") ?: ""
 
 android {
     namespace = "com.msa.qiblapro"
@@ -17,16 +27,14 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        // Google Maps Key from local.properties
-        manifestPlaceholders["MAPS_API_KEY"] =
-            (project.findProperty("MAPS_API_KEY") as String?) ?: ""
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
     }
 
-    // ✅ جایگزین resourceConfigurations
     androidResources {
+        // می‌تونی fa-rIR رو نگه داری، ولی داشتن fa و fa-rIR باهم معمولاً اضافه‌ست
         localeFilters += listOf("fa", "ar", "en", "fa-rIR")
     }
 
@@ -43,7 +51,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug") // برای تست
+            signingConfig = signingConfigs.getByName("debug") // فقط برای تست
         }
     }
 
@@ -105,7 +113,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     implementation(libs.play.services.location)
-    implementation(libs.play.services.maps) // اگر خواستی می‌تونی حذفش کنی
+    implementation(libs.play.services.maps) // اختیاری (maps-compose معمولاً خودش نیاز رو میاره)
     implementation(libs.maps.compose)
 
     testImplementation(libs.junit)

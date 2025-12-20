@@ -8,8 +8,18 @@ import com.google.android.gms.tasks.Tasks
 
 object GpsResolver {
 
-    fun buildEnableLocationIntentSender(activity: Activity): IntentSender? {
-        val req = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L).build()
+    fun buildEnableLocationIntentSender(
+        activity: Activity,
+        highAccuracy: Boolean = true
+    ): IntentSender? {
+        val priority = if (highAccuracy) {
+            Priority.PRIORITY_HIGH_ACCURACY
+        } else {
+            Priority.PRIORITY_BALANCED_POWER_ACCURACY
+        }
+
+        val req = LocationRequest.Builder(priority, 1000L).build()
+
         val settingsReq = LocationSettingsRequest.Builder()
             .addLocationRequest(req)
             .setAlwaysShow(true)

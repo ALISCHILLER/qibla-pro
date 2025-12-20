@@ -3,8 +3,13 @@ package com.msa.qiblapro.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BatterySaver
+import androidx.compose.material.icons.filled.CompassCalibration
+import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -89,18 +94,18 @@ fun SettingsScreen(
                     valueText = "${state.alignmentToleranceDeg}°"
                 ) { onAlignmentTolerance(it) }
 
-                Divider(Modifier.padding(top = 10.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+                HorizontalDivider(Modifier.padding(top = 10.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
 
                 ProSwitchRow(
-                    title = stringResource(R.string.auto_calibration),
-                    subtitle = stringResource(R.string.auto_calibration_desc),
+                    title = "کالیبراسیون خودکار",
+                    subtitle = "نمایش راهنما هنگام خطای سنسور",
                     checked = state.autoCalibration,
                     onCheckedChange = onAutoCalibration
                 )
 
                 ProIntSliderRow(
-                    title = stringResource(R.string.calibration_threshold),
-                    subtitle = stringResource(R.string.calibration_threshold_desc),
+                    title = "آستانه کالیبراسیون",
+                    subtitle = "تعداد دفعات خطا قبل از هشدار",
                     value = state.calibrationThreshold,
                     range = 1..10,
                     valueText = state.calibrationThreshold.toString()
@@ -109,18 +114,18 @@ fun SettingsScreen(
 
             // --- GPS ---
             GlassCard(modifier = Modifier.fillMaxWidth().proShadow()) {
-                SectionHeader(icon = Icons.Filled.GpsFixed, title = stringResource(R.string.gps_section))
+                SectionHeader(icon = Icons.Filled.GpsFixed, title = "موقعیت")
 
                 ProSwitchRow(
-                    title = stringResource(R.string.gps_prompt_title),
-                    subtitle = stringResource(R.string.gps_prompt_desc),
+                    title = "هشدار فعال‌سازی GPS",
+                    subtitle = "نمایش دیالوگ هنگام خاموش بودن مکان",
                     checked = state.showGpsPrompt,
                     onCheckedChange = onShowGpsPrompt
                 )
 
                 ProSwitchRow(
-                    title = stringResource(R.string.low_power_location),
-                    subtitle = stringResource(R.string.low_power_location_desc),
+                    title = "موقعیت کم‌مصرف",
+                    subtitle = "بهینه‌سازی برای مصرف باتری کمتر",
                     checked = state.useLowPowerLocation,
                     onCheckedChange = onLowPowerLocation
                 )
@@ -131,19 +136,19 @@ fun SettingsScreen(
                 SectionHeader(icon = Icons.Filled.BatterySaver, title = stringResource(R.string.battery_saver))
 
                 ProSwitchRow(
-                    title = stringResource(R.string.battery_saver_mode),
-                    subtitle = stringResource(R.string.battery_saver_desc),
+                    title = "حالت ذخیره باتری",
+                    subtitle = "کاهش نرخ بروزرسانی در پس‌زمینه",
                     checked = state.batterySaverMode,
                     onCheckedChange = onBatterySaver
                 )
 
                 if (state.batterySaverMode) {
                     ProIntSliderRow(
-                        title = stringResource(R.string.bg_update_frequency),
-                        subtitle = stringResource(R.string.bg_update_frequency_desc),
+                        title = "فاصله بروزرسانی پس‌زمینه",
+                        subtitle = "نرخ آپدیت زمانی که برنامه باز نیست",
                         value = state.bgUpdateFreqSec,
                         range = 2..30,
-                        valueText = stringResource(R.string.seconds_fmt, state.bgUpdateFreqSec)
+                        valueText = "${state.bgUpdateFreqSec} ثانیه"
                     ) { onBgUpdateFreqSec(it) }
                 }
             }
@@ -151,4 +156,88 @@ fun SettingsScreen(
             Spacer(Modifier.height(8.dp))
         }
     }
+}
+
+/* ---------- UI pieces ---------- */
+
+@Composable
+private fun SectionHeader(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        Spacer(Modifier.width(10.dp))
+        Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+    }
+    Spacer(Modifier.height(12.dp))
+}
+
+@Composable
+private fun ProSwitchRow(
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
+    }
+    Spacer(Modifier.height(12.dp))
+}
+
+@Composable
+private fun ProSliderRow(
+    title: String,
+    subtitle: String,
+    value: Float,
+    range: ClosedFloatingPointRange<Float>,
+    valueText: String,
+    onValueChange: (Float) -> Unit
+) {
+    Column(Modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Text(valueText, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+        }
+        Slider(value = value, onValueChange = onValueChange, valueRange = range)
+    }
+    Spacer(Modifier.height(6.dp))
+}
+
+@Composable
+fun ProIntSliderRow(
+    title: String,
+    subtitle: String,
+    value: Int,
+    range: IntRange,
+    valueText: String,
+    onValueChange: (Int) -> Unit
+) {
+    Column(Modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Text(valueText, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+        }
+        Slider(
+            value = value.toFloat(),
+            onValueChange = { onValueChange(it.toInt().coerceIn(range.first, range.last)) },
+            valueRange = range.first.toFloat()..range.last.toFloat(),
+            steps = (range.last - range.first - 1).coerceAtLeast(0)
+        )
+    }
+    Spacer(Modifier.height(6.dp))
 }

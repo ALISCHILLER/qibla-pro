@@ -5,6 +5,7 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LocationOn
@@ -32,7 +33,6 @@ fun GpsEnableDialog(
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        // Check status again on return
         if (GpsUtils.isLocationEnabled(context)) onEnabled()
     }
 
@@ -43,7 +43,7 @@ fun GpsEnableDialog(
             shape = MaterialTheme.shapes.extraLarge,
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
-            androidx.compose.foundation.layout.Column(
+            Column(
                 modifier = Modifier.padding(18.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -52,13 +52,13 @@ fun GpsEnableDialog(
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.error
                 )
-                Spacer(Modifier.padding(top = 10.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
                     text = stringResource(R.string.gps_disabled_title),
                     style = MaterialTheme.typography.titleLarge
                 )
-                Spacer(Modifier.padding(top = 6.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
                     text = stringResource(R.string.gps_disabled_msg),
@@ -67,22 +67,27 @@ fun GpsEnableDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                Spacer(Modifier.padding(top = 14.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-                androidx.compose.foundation.layout.Row(
-                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    OutlinedButton(onClick = onDismiss) {
+                    OutlinedButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = onDismiss
+                    ) {
                         Text(stringResource(R.string.later))
                     }
                     Button(
+                        modifier = Modifier.weight(1f),
                         onClick = {
                             val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                             if (activity != null) launcher.launch(intent) else onDismiss()
                         }
                     ) {
                         Icon(Icons.Filled.LocationOn, null)
-                        Spacer(Modifier.padding(horizontal = 6.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(stringResource(R.string.enable_gps))
                     }
                 }

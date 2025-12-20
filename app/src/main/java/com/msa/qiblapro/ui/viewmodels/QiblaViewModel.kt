@@ -23,18 +23,33 @@ data class QiblaUiState(
     val accuracyM: Float? = null,
 
     val headingMagDeg: Float = 0f,
-    val headingTrueDeg: Float = 0f,
+    val headingTrue: Float? = null,
 
     val qiblaDeg: Float = 0f,
     val distanceKm: Double = 0.0,
 
-    val rotationDeg: Float = 0f,       // error [-180..180]
+    val rotationToQibla: Float? = null,
     val facingQibla: Boolean = false,
 
     val needsCalibration: Boolean = false,
 
     val gpsEnabled: Boolean = true,
-    val showGpsDialog: Boolean = false
+    val showGpsDialog: Boolean = false,
+
+    // تنظیمات
+    val useTrueNorth: Boolean = true,
+    val smoothing: Float = 0.65f,
+    val alignTolerance: Int = 6,
+    val enableVibration: Boolean = true,
+    val enableSound: Boolean = true,
+    val mapType: Int = 1,
+    val showIranCities: Boolean = true,
+    val showGpsPrompt: Boolean = true,
+    val batterySaverMode: Boolean = false,
+    val bgUpdateFreqSec: Int = 5,
+    val useLowPowerLocation: Boolean = true,
+    val autoCalibration: Boolean = true,
+    val calibrationThreshold: Int = 3,
 )
 
 @HiltViewModel
@@ -54,6 +69,7 @@ class QiblaViewModel @Inject constructor(
     private var smoothHeading: Float = 0f
 
     init {
+        // Combine: تنظیمات + قطب‌نما + مجوز
         viewModelScope.launch {
             combine(
                 _permission,
@@ -68,22 +84,38 @@ class QiblaViewModel @Inject constructor(
                     _state.update { it.copy(hasLocationPermission = false) }
                     return@collect
                 }
-                _state.update { it.copy(hasLocationPermission = true) }
 
+                // Filter smoothing
                 val alpha = settings.smoothing.coerceIn(0f, 1f)
                 smoothHeading = if (smoothHeading == 0f) compass.headingMagneticDeg
                 else lerpAngle(smoothHeading, compass.headingMagneticDeg, alpha)
 
                 _state.update {
                     it.copy(
+                        hasLocationPermission = true,
                         headingMagDeg = compass.headingMagneticDeg,
-                        needsCalibration = settings.autoCalibration && (compass.accuracy == 0)
+                        needsCalibration = settings.autoCalibration && (compass.accuracy == 0),
+
+                        // تنظیمات
+                        useTrueNorth = settings.useTrueNorth,
+                        smoothing = settings.smoothing,
+                        alignTolerance = settings.alignmentToleranceDeg,
+                        enableVibration = settings.enableVibration,
+                        enableSound = settings.enableSound,
+                        mapType = settings.mapType,
+                        showIranCities = settings.showIranCities,
+                        showGpsPrompt = settings.showGpsPrompt,
+                        batterySaverMode = settings.batterySaverMode,
+                        bgUpdateFreqSec = settings.bgUpdateFreqSec,
+                        useLowPowerLocation = settings.useLowPowerLocation,
+                        autoCalibration = settings.autoCalibration,
+                        calibrationThreshold = settings.calibrationThreshold
                     )
                 }
             }
         }
 
-        // location stream (only when permission)
+        // دریافت موقعیت مکانی و محاسبه قبله
         viewModelScope.launch {
             _permission.flatMapLatest { perm ->
                 if (!perm) emptyFlow() else locRepo.locationFlow()
@@ -102,6 +134,8 @@ class QiblaViewModel @Inject constructor(
 
                 val facing = abs(rotErr) <= settings.alignmentToleranceDeg.coerceIn(2, 20)
 
+                val gpsEnabled = GpsUtils.isLocationEnabled(appCtx)
+
                 _state.update {
                     it.copy(
                         lat = loc.lat,
@@ -109,15 +143,9 @@ class QiblaViewModel @Inject constructor(
                         accuracyM = loc.accuracyM,
                         qiblaDeg = qibla,
                         distanceKm = dist,
-                        headingTrueDeg = trueHeading,
-                        rotationDeg = rotErr,
-                        facingQibla = facing
-                    )
-                }
-
-                val gpsEnabled = GpsUtils.isLocationEnabled(appCtx)
-                _state.update {
-                    it.copy(
+                        headingTrue = trueHeading,
+                        rotationToQibla = rotErr,
+                        facingQibla = facing,
                         gpsEnabled = gpsEnabled,
                         showGpsDialog = (!gpsEnabled && settings.showGpsPrompt)
                     )
@@ -126,10 +154,64 @@ class QiblaViewModel @Inject constructor(
         }
     }
 
-    fun hideGpsDialog() = _state.update { it.copy(showGpsDialog = false) }
-
     private fun lerpAngle(a: Float, b: Float, t: Float): Float {
         val diff = ((b - a + 540f) % 360f) - 180f
         return (a + diff * t + 360f) % 360f
+    }
+
+    fun hideGpsDialog() = _state.update { it.copy(showGpsDialog = false) }
+
+    // Setter ها برای تنظیمات
+
+    fun setTrueNorth(v: Boolean) {
+        viewModelScope.launch { settingsRepo.setUseTrueNorth(v) }
+    }
+
+    fun setSmoothing(v: Float) {
+        viewModelScope.launch { settingsRepo.setSmoothing(v) }
+    }
+
+    fun setTolerance(v: Double) {
+        viewModelScope.launch { settingsRepo.setAlignmentTolerance(v.toInt()) }
+    }
+
+    fun setGpsPrompt(v: Boolean) {
+        viewModelScope.launch { settingsRepo.setShowGpsPrompt(v) }
+    }
+
+    fun setMapType(v: Int) {
+        viewModelScope.launch { settingsRepo.setMapType(v) }
+    }
+
+    fun setIranCities(v: Boolean) {
+        viewModelScope.launch { settingsRepo.setShowIranCities(v) }
+    }
+
+    fun setVibration(v: Boolean) {
+        viewModelScope.launch { settingsRepo.setVibration(v) }
+    }
+
+    fun setSound(v: Boolean) {
+        viewModelScope.launch { settingsRepo.setSound(v) }
+    }
+
+    fun setBatterySaver(v: Boolean) {
+        viewModelScope.launch { settingsRepo.setBatterySaver(v) }
+    }
+
+    fun setBgFreq(v: Int) {
+        viewModelScope.launch { settingsRepo.setBgFreqSec(v) }
+    }
+
+    fun setLowPowerLocation(v: Boolean) {
+        viewModelScope.launch { settingsRepo.setLowPowerLocation(v) }
+    }
+
+    fun setAutoCalibration(v: Boolean) {
+        viewModelScope.launch { settingsRepo.setAutoCalibration(v) }
+    }
+
+    fun setCalibrationThreshold(v: Int) {
+        viewModelScope.launch { settingsRepo.setCalibrationThreshold(v) }
     }
 }

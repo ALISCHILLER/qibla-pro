@@ -10,14 +10,19 @@ private val Context.ds by preferencesDataStore(name = "qibla_settings")
 
 data class AppSettings(
     val useTrueNorth: Boolean = true,
-    val smoothing: Float = 0.65f,                 // 0..1
-    val alignmentToleranceDeg: Int = 6,           // 2..20
+    val smoothing: Float = 0.65f,
+    val alignmentToleranceDeg: Int = 6,
     val showGpsPrompt: Boolean = true,
     val batterySaverMode: Boolean = false,
-    val bgUpdateFreqSec: Int = 5,                 // 2..30
+    val bgUpdateFreqSec: Int = 5,
     val useLowPowerLocation: Boolean = true,
     val autoCalibration: Boolean = true,
-    val calibrationThreshold: Int = 3             // 1..10
+    val calibrationThreshold: Int = 3,
+
+    val enableVibration: Boolean = true,
+    val enableSound: Boolean = true,
+    val mapType: Int = 1,
+    val showIranCities: Boolean = true
 )
 
 class SettingsRepository(private val ctx: Context) {
@@ -34,6 +39,12 @@ class SettingsRepository(private val ctx: Context) {
 
         val AUTO_CALIB = booleanPreferencesKey("auto_calib")
         val CALIB_THRESHOLD = intPreferencesKey("calib_threshold")
+
+        // ✅ کلیدهای جدید
+        val ENABLE_VIBRATION = booleanPreferencesKey("enable_vibration")
+        val ENABLE_SOUND = booleanPreferencesKey("enable_sound")
+        val MAP_TYPE = intPreferencesKey("map_type")
+        val SHOW_IRAN_CITIES = booleanPreferencesKey("show_iran_cities")
     }
 
     val settingsFlow: Flow<AppSettings> = ctx.ds.data.map { p ->
@@ -48,10 +59,16 @@ class SettingsRepository(private val ctx: Context) {
             useLowPowerLocation = p[Keys.LOW_POWER_LOC] ?: true,
 
             autoCalibration = p[Keys.AUTO_CALIB] ?: true,
-            calibrationThreshold = p[Keys.CALIB_THRESHOLD] ?: 3
+            calibrationThreshold = p[Keys.CALIB_THRESHOLD] ?: 3,
+
+            enableVibration = p[Keys.ENABLE_VIBRATION] ?: true,
+            enableSound = p[Keys.ENABLE_SOUND] ?: true,
+            mapType = p[Keys.MAP_TYPE] ?: 1,
+            showIranCities = p[Keys.SHOW_IRAN_CITIES] ?: true
         )
     }
 
+    // ✅ Setterهای موجود
     suspend fun setUseTrueNorth(v: Boolean) = ctx.ds.edit { it[Keys.USE_TRUE_NORTH] = v }
     suspend fun setSmoothing(v: Float) = ctx.ds.edit { it[Keys.SMOOTHING] = v.coerceIn(0f, 1f) }
     suspend fun setAlignmentTolerance(v: Int) = ctx.ds.edit { it[Keys.ALIGN_TOL] = v.coerceIn(2, 20) }
@@ -63,4 +80,10 @@ class SettingsRepository(private val ctx: Context) {
 
     suspend fun setAutoCalibration(v: Boolean) = ctx.ds.edit { it[Keys.AUTO_CALIB] = v }
     suspend fun setCalibrationThreshold(v: Int) = ctx.ds.edit { it[Keys.CALIB_THRESHOLD] = v.coerceIn(1, 10) }
+
+    // ✅ Setterهای جدید
+    suspend fun setVibration(v: Boolean) = ctx.ds.edit { it[Keys.ENABLE_VIBRATION] = v }
+    suspend fun setSound(v: Boolean) = ctx.ds.edit { it[Keys.ENABLE_SOUND] = v }
+    suspend fun setMapType(v: Int) = ctx.ds.edit { it[Keys.MAP_TYPE] = v }
+    suspend fun setShowIranCities(v: Boolean) = ctx.ds.edit { it[Keys.SHOW_IRAN_CITIES] = v }
 }

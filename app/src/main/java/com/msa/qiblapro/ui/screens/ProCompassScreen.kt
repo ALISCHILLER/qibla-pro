@@ -12,15 +12,19 @@ import com.msa.qiblapro.R
 import com.msa.qiblapro.ui.pro.*
 import com.msa.qiblapro.ui.viewmodels.QiblaUiState
 import com.msa.qiblapro.ui.widgets.CompassRose
+import com.msa.qiblapro.ui.widgets.LuxNeedle
 
 @Composable
 fun ProCompassScreen(
     st: QiblaUiState,
     modifier: Modifier = Modifier
 ) {
+    val rotation = st.rotationToQibla ?: 0f
+    val tolerance = st.alignTolerance.toFloat().coerceAtLeast(1f)
+    
     val prox = proximity01(
-        rotationErrorDeg = st.rotationToQibla?.toFloat() ?: 0f,
-        toleranceDeg = st.alignTolerance.toFloat()
+        rotationErrorDeg = rotation,
+        toleranceDeg = tolerance
     )
     val isFacing = st.facingQibla
 
@@ -29,49 +33,54 @@ fun ProCompassScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             FacingGlowPill(
-                text = if (isFacing) stringResource(id = R.string.facing_qibla) else stringResource(id = R.string.rotate_to_qibla, st.rotationToQibla?.toInt() ?: 0),
-                isFacing = isFacing
+                text = if (isFacing) stringResource(id = R.string.facing_qibla) 
+                else stringResource(id = R.string.rotate_to_qibla, rotation.toInt()),
+                isFacing = isFacing,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
-            Spacer(modifier = Modifier.weight(1f))
-
             GlassCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .proShadow(),
-                contentPadding = PaddingValues(0.dp)
+                    .height(380.dp)
+                    .proShadow()
             ) {
-                val premiumNeedleMod = NeedlePremiumModifier(proximity = prox, isFacing = isFacing)
-                CompassRose(
-                    headingDeg = st.headingTrue?.toFloat() ?: 0f,
-                    qiblaDeg = st.qiblaDeg?.toFloat() ?: 0f,
-                    modifier = Modifier.fillMaxSize(),
-                    needleModifier = premiumNeedleMod
-                )
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CompassRose(
+                        headingDeg = st.headingTrue ?: 0f,
+                        qiblaDeg = st.qiblaDeg,
+                        modifier = Modifier.fillMaxSize()
+                    )
+
+                    val premiumNeedleMod = NeedlePremiumModifier(proximity = prox, isFacing = isFacing)
+
+                    LuxNeedle(
+                        rotationDeg = -rotation,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .then(premiumNeedleMod)
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-
             GlassCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .proShadow(),
-                contentPadding = PaddingValues(16.dp)
+                    .proShadow()
             ) {
-                InfoRow(stringResource(id = R.string.qibla_direction), st.qiblaDeg?.let { "%.1f°".format(it) } ?: "--")
-                InfoRow(stringResource(id = R.string.distance_to_kaaba), st.distanceKm?.let { "${it.toInt()} km" } ?: "--")
-                InfoRow(stringResource(id = R.string.accuracy), st.accuracy?.let { "${it.toInt()} m" } ?: "--")
+                InfoRow(stringResource(id = R.string.qibla_direction), "%.1f°".format(st.qiblaDeg))
+                InfoRow(stringResource(id = R.string.distance_to_kaaba), "${st.distanceKm.toInt()} km")
+                InfoRow(stringResource(id = R.string.accuracy), st.accuracyM?.let { "${it.toInt()} m" } ?: "--")
             }
         }
     }
 }
 
 @Composable
-private fun InfoRow(title: String, value: String) {
+fun InfoRow(title: String, value: String) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(title, color = Color.White.copy(alpha = 0.78f))
         Text(value, color = Color.White.copy(alpha = 0.96f))
