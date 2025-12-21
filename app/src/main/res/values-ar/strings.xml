@@ -13,18 +13,36 @@
     <string name="tab_map">الخريطة</string>
     <string name="tab_settings">الإعدادات</string>
 
+    <!-- Language -->
+    <string name="language_label">اللغة</string>
+
     <!-- Permission -->
     <string name="permission_title">إذن الموقع</string>
-    <string name="permission_message">لحساب اتجاه القبلة بدقة، نحتاج إلى إذن الوصول لموقعك.\n\nجميع الحسابات تتم محليًا على جهازك.</string>
+    <string name="permission_message">
+        لحساب اتجاه القبلة بدقة، نحتاج إلى إذن الوصول لموقعك.\n\nجميع الحسابات تتم محليًا على جهازك.
+    </string>
     <string name="grant_permission">منح الإذن</string>
     <string name="permission_denied">تم رفض الإذن</string>
+    <string name="permission_denied_permanently">
+        تم رفض الإذن بشكل دائم. يرجى تفعيله من الإعدادات.
+    </string>
     <string name="open_settings">فتح الإعدادات</string>
 
-    <!-- GPS dialog -->
+    <!-- GPS dialog + SnackBars -->
     <string name="gps_disabled_title">الموقع غير مفعّل</string>
-    <string name="gps_disabled_msg">لتحسين الدقة، يرجى تفعيل GPS.\n\nقد تتحسن الدقة بشكل ملحوظ.</string>
+    <string name="gps_disabled_msg">
+        لتحسين الدقة، يرجى تفعيل GPS.\n\nقد تتحسن الدقة بشكل ملحوظ.
+    </string>
     <string name="enable_gps">تفعيل GPS</string>
     <string name="later">لاحقًا</string>
+
+    <string name="gps_off_snackbar_title">خدمات الموقع غير مفعّلة</string>
+    <string name="gps_off_snackbar_action">الإعدادات</string>
+
+    <!-- Airplane mode -->
+    <string name="airplane_mode_on_msg">
+        وضع الطائرة مفعّل. قد تنخفض دقة تحديد الموقع.
+    </string>
 
     <!-- Compass -->
     <string name="facing_qibla">أنت باتجاه القبلة ✅</string>
@@ -38,31 +56,57 @@
     <string name="latitude">خط العرض</string>
     <string name="longitude">خط الطول</string>
 
-    <!-- Settings -->
+    <!-- Settings: General -->
     <string name="settings">الإعدادات</string>
-    <string name="compass_settings">البوصلة</string>
+
+    <!-- Settings: Compass -->
+    <string name="compass_settings">إعدادات البوصلة</string>
 
     <string name="use_true_north">استخدام الشمال الحقيقي</string>
-    <string name="true_north_desc">تصحيح الانحراف المغناطيسي</string>
+    <string name="true_north_desc">تصحيح الانحراف المغناطيسي لتحسين الدقة</string>
 
     <string name="angle_smoothing">تنعيم الزاوية</string>
-    <string name="smoothing_desc">تقليل اهتزاز المؤشر</string>
+    <string name="smoothing_desc">تقليل اهتزاز مؤشر البوصلة</string>
 
     <string name="alignment_sensitivity">هامش المحاذاة</string>
-    <string name="sensitivity_desc">عتبة “اتجاه القبلة”</string>
+    <string name="sensitivity_desc">العتبة اللازمة لاعتبارك "باتجاه القبلة"</string>
+
+    <string name="auto_calibration">المعايرة التلقائية</string>
+    <string name="calibration_guide">عرض دليل معايرة عند وجود خطأ في المستشعر</string>
+    <string name="calibration_threshold_title">حد المعايرة</string>
+    <string name="calibration_threshold_desc">عدد أخطاء المستشعر قبل إظهار دليل المعايرة</string>
 
     <!-- Settings: Location section -->
     <string name="gps_section">الموقع</string>
     <string name="gps_prompt_title">تنبيه تفعيل GPS</string>
+    <string name="gps_prompt_desc">عرض مربع حوار عند إيقاف خدمات الموقع</string>
+
     <string name="low_power_location">موقع منخفض الاستهلاك</string>
+    <string name="low_power_location_desc">استخدام وضع تحديد موقع أقل استهلاكًا للطاقة</string>
+
+    <!-- Settings: Feedback / Haptics -->
+    <string name="feedback_section_title">التنبيهات</string>
+    <string name="feedback_vibration_title">الاهتزاز</string>
+    <string name="feedback_vibration_desc">اهتزاز خفيف عند التوجه نحو القبلة</string>
+    <string name="feedback_sound_title">الصوت</string>
+    <string name="feedback_sound_desc">تشغيل صوت خفيف عند تطابق الاتجاه مع القبلة</string>
 
     <!-- Settings: Battery -->
     <string name="battery_saver">توفير البطارية</string>
     <string name="battery_saver_mode">وضع توفير البطارية</string>
+    <string name="battery_saver_desc">تقليل التحديثات في الخلفية لتوفير استهلاك البطارية</string>
+
     <string name="bg_update_frequency">فاصل تحديث الخلفية</string>
+    <string name="bg_update_frequency_desc">تحديد معدل تحديث الموقع أثناء عمل التطبيق في الخلفية</string>
 
     <!-- Optional / future -->
     <string name="battery_tips_title">نصائح توفير البطارية</string>
-    <string name="calibration_guide">دليل المعايرة</string>
-    <string name="auto_calibration">المعايرة التلقائية</string>
+
+    <!-- Settings: Map -->
+    <string name="map_section_title">الخريطة</string>
+    <string name="show_iran_cities_title">عرض مدن إيران</string>
+    <string name="show_iran_cities_desc">إبراز المدن الرئيسية في إيران على الخريطة</string>
+
+    <string name="map_type_title">نمط الخريطة</string>
+    <string name="map_type_desc">اختيار بين خريطة عادية، قمر صناعي، أو تضاريس</string>
 </resources>

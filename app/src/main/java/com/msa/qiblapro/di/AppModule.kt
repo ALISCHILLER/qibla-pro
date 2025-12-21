@@ -36,9 +36,9 @@ object AppModule {
         settings: SettingsRepository
     ) = LocationRepository(ctx, fused, settings)
 
-    @Provides @Singleton
+    @Provides
+    @Singleton
     fun provideCompassRepo(
-        @ApplicationContext ctx: Context,
         sm: SensorManager
-    ) = CompassRepository(ctx, sm)
+    ): CompassRepository = CompassRepository(sm)
 }

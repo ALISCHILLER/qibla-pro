@@ -13,18 +13,36 @@
     <string name="tab_map">نقشه</string>
     <string name="tab_settings">تنظیمات</string>
 
+    <!-- Language -->
+    <string name="language_label">زبان</string>
+
     <!-- Permission -->
     <string name="permission_title">دسترسی به موقعیت</string>
-    <string name="permission_message">برای محاسبه دقیق قبله، دسترسی به موقعیت شما لازم است.\n\nتمام محاسبات فقط روی دستگاه انجام می‌شود.</string>
+    <string name="permission_message">
+        برای محاسبه دقیق قبله، دسترسی به موقعیت شما لازم است.\n\nتمام محاسبات فقط روی دستگاه انجام می‌شود.
+    </string>
     <string name="grant_permission">اعطای دسترسی</string>
     <string name="permission_denied">دسترسی رد شد</string>
+    <string name="permission_denied_permanently">
+        مجوز به صورت دائمی رد شده است. لطفاً از طریق تنظیمات آن را فعال کنید.
+    </string>
     <string name="open_settings">رفتن به تنظیمات</string>
 
-    <!-- GPS dialog -->
+    <!-- GPS dialog + SnackBars -->
     <string name="gps_disabled_title">GPS غیرفعال است</string>
-    <string name="gps_disabled_msg">برای دقت بهتر، لطفاً GPS را فعال کنید.\n\nدقت محاسبه قبله به شکل محسوسی افزایش می‌یابد.</string>
+    <string name="gps_disabled_msg">
+        برای دقت بهتر، لطفاً GPS را فعال کنید.\n\nدقت محاسبه قبله به شکل محسوسی افزایش می‌یابد.
+    </string>
     <string name="enable_gps">فعال‌سازی GPS</string>
     <string name="later">بعداً</string>
+
+    <string name="gps_off_snackbar_title">موقعیت‌یاب دستگاه غیرفعال است</string>
+    <string name="gps_off_snackbar_action">تنظیمات</string>
+
+    <!-- Airplane mode -->
+    <string name="airplane_mode_on_msg">
+        حالت هواپیما فعال است. دقت موقعیت ممکن است کاهش یابد.
+    </string>
 
     <!-- Compass -->
     <string name="facing_qibla">روی قبله هستید ✅</string>
@@ -38,8 +56,10 @@
     <string name="latitude">عرض جغرافیایی</string>
     <string name="longitude">طول جغرافیایی</string>
 
-    <!-- Settings -->
+    <!-- Settings: General -->
     <string name="settings">تنظیمات</string>
+
+    <!-- Settings: Compass -->
     <string name="compass_settings">تنظیمات قطب‌نما</string>
 
     <string name="use_true_north">استفاده از شمال واقعی</string>
@@ -51,18 +71,42 @@
     <string name="alignment_sensitivity">حساسیت هم‌ترازی</string>
     <string name="sensitivity_desc">آستانه تشخیص «روی قبله»</string>
 
+    <string name="auto_calibration">کالیبراسیون خودکار</string>
+    <string name="calibration_guide">در صورت خطای سنسور، راهنمای کالیبراسیون را نمایش بده</string>
+    <string name="calibration_threshold_title">آستانه کالیبراسیون</string>
+    <string name="calibration_threshold_desc">تعداد خطای سنسور قبل از نمایش راهنمای کالیبراسیون</string>
+
     <!-- Settings: Location section -->
     <string name="gps_section">موقعیت</string>
     <string name="gps_prompt_title">هشدار فعال‌سازی GPS</string>
+    <string name="gps_prompt_desc">نمایش دیالوگ وقتی موقعیت دستگاه خاموش است</string>
+
     <string name="low_power_location">موقعیت کم‌مصرف</string>
+    <string name="low_power_location_desc">استفاده از حالت موقعیت‌یابی کم‌مصرف برای کاهش مصرف باتری</string>
+
+    <!-- Settings: Feedback / Haptics -->
+    <string name="feedback_section_title">بازخورد</string>
+    <string name="feedback_vibration_title">لرزش</string>
+    <string name="feedback_vibration_desc">هنگام قرار گرفتن روی قبله یک لرزش کوتاه پخش شود</string>
+    <string name="feedback_sound_title">صدا</string>
+    <string name="feedback_sound_desc">هنگام هم‌ترازی با قبله یک صدای ملایم پخش شود</string>
 
     <!-- Settings: Battery -->
     <string name="battery_saver">صرفه‌جویی باتری</string>
     <string name="battery_saver_mode">حالت کم‌مصرف</string>
+    <string name="battery_saver_desc">با کاهش نرخ بروزرسانی، مصرف باتری را کمتر می‌کند</string>
+
     <string name="bg_update_frequency">فاصله بروزرسانی پس‌زمینه</string>
+    <string name="bg_update_frequency_desc">بازه زمانی بروزرسانی موقعیت در پس‌زمینه را مشخص می‌کند</string>
 
     <!-- Optional / future -->
     <string name="battery_tips_title">نکات صرفه‌جویی باتری</string>
-    <string name="calibration_guide">راهنمای کالیبراسیون</string>
-    <string name="auto_calibration">کالیبراسیون خودکار</string>
+
+    <!-- Settings: Map -->
+    <string name="map_section_title">نقشه</string>
+    <string name="show_iran_cities_title">نمایش شهرهای ایران</string>
+    <string name="show_iran_cities_desc">شهرهای مهم ایران را روی نقشه برجسته می‌کند</string>
+
+    <string name="map_type_title">نوع نقشه</string>
+    <string name="map_type_desc">انتخاب بین نمای عادی، ماهواره‌ای یا توپوگرافی</string>
 </resources>

@@ -2,19 +2,21 @@ package com.msa.qiblapro.ui.nav
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
+import com.msa.qiblapro.ui.pro.ProBackground
 import com.msa.qiblapro.ui.screens.*
 import com.msa.qiblapro.ui.viewmodels.QiblaViewModel
-import com.msa.qiblapro.ui.viewmodels.SettingsViewModel
 
 private object Routes {
     const val PERMISSION = "permission"
@@ -28,7 +30,10 @@ private object Routes {
 fun AppNavGraph() {
     val nav = rememberNavController()
 
-    NavHost(navController = nav, startDestination = Routes.PERMISSION) {
+    NavHost(
+        navController = nav,
+        startDestination = Routes.PERMISSION
+    ) {
         composable(Routes.PERMISSION) {
             val vm: QiblaViewModel = hiltViewModel()
             PermissionScreen(
@@ -57,36 +62,70 @@ private fun MainScaffold() {
         Routes.SETTINGS to Pair(Icons.Filled.Settings, "Settings"),
     )
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                val current by nav.currentBackStackEntryAsState()
-                val currentRoute = current?.destination?.route
-                items.forEach { (route, iconTitle) ->
-                    NavigationBarItem(
-                        selected = currentRoute == route,
-                        onClick = {
-                            nav.navigate(route) {
-                                popUpTo(nav.graph.findStartDestination().id) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = { Icon(iconTitle.first, null) },
-                        label = { Text(iconTitle.second) }
-                    )
+    // ✅ فقط یک ProBackground در بالاترین سطح
+    ProBackground {
+        Scaffold(
+            // 🔑 خیلی مهم
+            containerColor = Color.Transparent,
+
+            bottomBar = {
+                NavigationBar(
+                    // 🔑 شفاف واقعی
+                    containerColor = Color.Black.copy(alpha = 0.22f),
+                    tonalElevation = 0.dp
+                ) {
+                    val current by nav.currentBackStackEntryAsState()
+                    val currentRoute = current?.destination?.route
+
+                    items.forEach { (route, iconTitle) ->
+                        NavigationBarItem(
+                            selected = currentRoute == route,
+                            onClick = {
+                                nav.navigate(route) {
+                                    popUpTo(nav.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            icon = {
+                                Icon(
+                                    iconTitle.first,
+                                    contentDescription = iconTitle.second
+                                )
+                            },
+                            label = {
+                                Text(iconTitle.second)
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Color.White,
+                                selectedTextColor = Color.White,
+                                unselectedIconColor = Color.White.copy(alpha = 0.65f),
+                                unselectedTextColor = Color.White.copy(alpha = 0.65f),
+                                indicatorColor = Color.White.copy(alpha = 0.12f)
+                            )
+                        )
+                    }
                 }
             }
-        }
-    ) { padding ->
-        NavHost(
-            navController = nav,
-            startDestination = Routes.COMPASS,
-            modifier = Modifier.padding(padding)
-        ) {
-            composable(Routes.COMPASS) { CompassScreen() }
-            composable(Routes.MAP) { MapScreen() }
-            composable(Routes.SETTINGS) { SettingsRoute() }
+        ) { padding ->
+            NavHost(
+                navController = nav,
+                startDestination = Routes.COMPASS,
+                modifier = Modifier.padding(padding)
+            ) {
+                composable(Routes.COMPASS) {
+                    // ❌ ProBackground اینجا نباید باشه
+                    CompassScreen()
+                }
+                composable(Routes.MAP) {
+                    MapScreen()
+                }
+                composable(Routes.SETTINGS) {
+                    SettingsRoute()
+                }
+            }
         }
     }
 }

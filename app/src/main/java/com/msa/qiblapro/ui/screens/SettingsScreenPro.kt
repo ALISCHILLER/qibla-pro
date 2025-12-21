@@ -15,9 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.msa.qiblapro.data.settings.AppSettings
-import com.msa.qiblapro.ui.pro.GlassCard
+import com.msa.qiblapro.ui.pro.AppCard
 import com.msa.qiblapro.ui.pro.ProBackground
-import com.msa.qiblapro.ui.pro.proShadow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +39,7 @@ fun SettingsScreenPro(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
-                GlassCard(modifier = Modifier.fillMaxWidth().proShadow()) {
+                AppCard(modifier = Modifier.fillMaxWidth()) {
                     Text("Settings", style = MaterialTheme.typography.headlineSmall, color = Color.White)
                     Text(
                         "Configure everything exactly as you like ✨",
@@ -120,7 +119,7 @@ private fun SectionCard(
     icon: ImageVector,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    GlassCard(modifier = Modifier.fillMaxWidth().proShadow()) {
+    AppCard(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.width(10.dp))

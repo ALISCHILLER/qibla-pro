@@ -13,18 +13,36 @@
     <string name="tab_map">Map</string>
     <string name="tab_settings">Settings</string>
 
+    <!-- Language -->
+    <string name="language_label">Language</string>
+
     <!-- Permission -->
     <string name="permission_title">Location access</string>
-    <string name="permission_message">To calculate Qibla accurately, we need access to your location.\n\nAll calculations are done locally on your device.</string>
+    <string name="permission_message">
+        To calculate Qibla accurately, we need access to your location.\n\nAll calculations are done locally on your device.
+    </string>
     <string name="grant_permission">Grant access</string>
     <string name="permission_denied">Permission denied</string>
+    <string name="permission_denied_permanently">
+        Permission is permanently denied. Please enable it from Settings.
+    </string>
     <string name="open_settings">Open settings</string>
 
-    <!-- GPS dialog -->
+    <!-- GPS dialog + SnackBars -->
     <string name="gps_disabled_title">Location is off</string>
-    <string name="gps_disabled_msg">For better accuracy, please enable GPS.\n\nAccuracy can improve significantly.</string>
+    <string name="gps_disabled_msg">
+        For better accuracy, please enable GPS.\n\nAccuracy can improve significantly.
+    </string>
     <string name="enable_gps">Enable GPS</string>
     <string name="later">Later</string>
+
+    <string name="gps_off_snackbar_title">Location services seem to be off</string>
+    <string name="gps_off_snackbar_action">Settings</string>
+
+    <!-- Airplane mode -->
+    <string name="airplane_mode_on_msg">
+        Airplane mode is enabled. Location accuracy may be reduced.
+    </string>
 
     <!-- Compass -->
     <string name="facing_qibla">Facing Qibla ✅</string>
@@ -38,8 +56,10 @@
     <string name="latitude">Latitude</string>
     <string name="longitude">Longitude</string>
 
-    <!-- Settings -->
+    <!-- Settings: General -->
     <string name="settings">Settings</string>
+
+    <!-- Settings: Compass -->
     <string name="compass_settings">Compass</string>
 
     <string name="use_true_north">Use True North</string>
@@ -51,18 +71,42 @@
     <string name="alignment_sensitivity">Alignment tolerance</string>
     <string name="sensitivity_desc">Threshold for “Facing Qibla”</string>
 
+    <string name="auto_calibration">Auto calibration</string>
+    <string name="calibration_guide">Show a guide when the sensor needs calibration</string>
+    <string name="calibration_threshold_title">Calibration threshold</string>
+    <string name="calibration_threshold_desc">Number of sensor errors before showing the guide</string>
+
     <!-- Settings: Location section -->
     <string name="gps_section">Location</string>
     <string name="gps_prompt_title">GPS enable prompt</string>
+    <string name="gps_prompt_desc">Show a dialog when location is turned off</string>
+
     <string name="low_power_location">Low power location</string>
+    <string name="low_power_location_desc">Use a more battery-friendly location mode</string>
+
+    <!-- Settings: Feedback / Haptics -->
+    <string name="feedback_section_title">Feedback</string>
+    <string name="feedback_vibration_title">Vibration</string>
+    <string name="feedback_vibration_desc">Vibrate gently when you face Qibla</string>
+    <string name="feedback_sound_title">Sound</string>
+    <string name="feedback_sound_desc">Play a subtle sound when aligned with Qibla</string>
 
     <!-- Settings: Battery -->
     <string name="battery_saver">Battery saver</string>
     <string name="battery_saver_mode">Battery saver mode</string>
+    <string name="battery_saver_desc">Reduce background updates to save battery</string>
+
     <string name="bg_update_frequency">Background update interval</string>
+    <string name="bg_update_frequency_desc">How often location is refreshed in the background</string>
 
     <!-- Optional / future -->
     <string name="battery_tips_title">Battery tips</string>
-    <string name="calibration_guide">Calibration guide</string>
-    <string name="auto_calibration">Auto calibration</string>
+
+    <!-- Settings: Map -->
+    <string name="map_section_title">Map</string>
+    <string name="show_iran_cities_title">Show Iranian cities</string>
+    <string name="show_iran_cities_desc">Highlight major cities in Iran on the map</string>
+
+    <string name="map_type_title">Map style</string>
+    <string name="map_type_desc">Choose between normal, satellite, or terrain view</string>
 </resources>

@@ -1,12 +1,14 @@
 package com.msa.qiblapro.ui.screens
 
-import androidx.compose.foundation.layout.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.google.android.gms.maps.model.Dash
-import com.google.android.gms.maps.model.Gap
-import com.google.android.gms.maps.model.LatLng
+import androidx.core.content.ContextCompat
+import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
 import com.msa.qiblapro.R
 import com.msa.qiblapro.ui.pro.ProBackground
@@ -14,6 +16,8 @@ import com.msa.qiblapro.ui.viewmodels.QiblaViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 
 private val KAABA = LatLng(21.4225, 39.8262)
+
+
 
 @Composable
 fun MapScreen(
@@ -23,64 +27,72 @@ fun MapScreen(
     val st by vm.state.collectAsState()
     val context = LocalContext.current
 
+    // کاربر مکان‌یابی شده؟
     val userLocation = st.lat?.let { lat -> st.lon?.let { lon -> LatLng(lat, lon) } }
 
-    val qiblaIcon = remember {
-        bitmapDescriptorFromVector(context, R.drawable.ic_qibla_direction)
+    // وضعیت آیکون قبله (با تأخیر امن بارگذاری می‌شود)
+    val qiblaIcon = remember { mutableStateOf<BitmapDescriptor?>(null) }
+
+    LaunchedEffect(context) {
+        // از کرش جلوگیری می‌کند چون ممکن است MapInitializer هنوز آماده نباشد
+        qiblaIcon.value = bitmapDescriptorFromVector(context, R.drawable.ic_qibla_direction)
     }
 
-    val mapType = remember(st.mapType) {
-        when (st.mapType) {
-            1 -> MapType.NORMAL
-            2 -> MapType.SATELLITE
-            3 -> MapType.TERRAIN
-            4 -> MapType.HYBRID
-            else -> MapType.NORMAL
-        }
+    val mapType = when (st.mapType) {
+        1 -> MapType.NORMAL
+        2 -> MapType.SATELLITE
+        3 -> MapType.TERRAIN
+        4 -> MapType.HYBRID
+        else -> MapType.NORMAL
     }
 
     val userMarkerState = remember(userLocation) {
         userLocation?.let { MarkerState(it) }
     }
 
-    val kaabaMarkerState = remember {
-        MarkerState(KAABA)
+    val kaabaMarkerState = remember { MarkerState(KAABA) }
+
+    val mapProperties = remember(mapType) {
+        MapProperties(
+            isMyLocationEnabled = false,
+            mapType = mapType
+        )
+    }
+
+    val mapUiSettings = remember {
+        MapUiSettings(
+            zoomControlsEnabled = true,
+            compassEnabled = true,
+            myLocationButtonEnabled = false,
+            mapToolbarEnabled = true
+        )
     }
 
     ProBackground(modifier.fillMaxSize()) {
         GoogleMap(
             modifier = modifier.fillMaxSize(),
-            properties = remember {
-                MapProperties(
-                    isMyLocationEnabled = false,
-                    mapType = mapType
-                )
-            },
-            uiSettings = remember {
-                MapUiSettings(
-                    zoomControlsEnabled = true,
-                    compassEnabled = true,
-                    myLocationButtonEnabled = false,
-                    mapToolbarEnabled = true
-                )
-            }
+            properties = mapProperties,
+            uiSettings = mapUiSettings
         ) {
-            if (userMarkerState != null) {
+            if (userMarkerState != null && userLocation != null && qiblaIcon.value != null) {
+                // مارکر قبله
                 Marker(
                     state = userMarkerState,
                     title = "Qibla",
-                    icon = qiblaIcon,
+                    icon = qiblaIcon.value,
                     rotation = st.qiblaDeg,
                     flat = true
                 )
 
+                // مارکر کعبه
                 Marker(
                     state = kaabaMarkerState,
                     title = "Kaaba"
                 )
 
+                // خط قبله
                 Polyline(
-                    points = listOf(userLocation!!, KAABA),
+                    points = listOf(userLocation, KAABA),
                     geodesic = true,
                     width = 8f,
                     pattern = listOf(Dash(30f), Gap(10f))
