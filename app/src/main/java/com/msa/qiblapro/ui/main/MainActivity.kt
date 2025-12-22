@@ -23,7 +23,10 @@ class MainActivity : ComponentActivity() {
                 themeMode = state.themeMode,
                 accent = state.accent
             ) {
-                AppNavGraph()
+                AppNavGraph(
+                    hasSeenOnboarding = state.hasSeenOnboarding,
+                    onOnboardingFinish = { settingsVm.setHasSeenOnboarding(true) }
+                )
             }
         }
     }

@@ -53,6 +53,7 @@ class QiblaViewModel @Inject constructor(
     private val compassRestart = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     private var calibrationGuideDismissedUntilMs: Long = 0L
+    private var lastHapticTimeMs: Long = 0L
 
     // آخرین پارامترها برای کالبک‌های ویبره
     private var lastHapticStrength: Int = 2
@@ -224,7 +225,9 @@ class QiblaViewModel @Inject constructor(
         // Edge-trigger برای haptics/sound
         if (isFacingNow && !facingLatched) {
             facingLatched = true
-            if (settings.enableVibration) {
+            val now = System.currentTimeMillis()
+            if (settings.enableVibration && (now - lastHapticTimeMs >= settings.hapticCooldownMs)) {
+                lastHapticTimeMs = now
                 _events.tryEmit(AppEvent.VibratePattern(settings.hapticStrength, settings.hapticPattern))
             }
             if (settings.enableSound) _events.tryEmit(AppEvent.Beep)

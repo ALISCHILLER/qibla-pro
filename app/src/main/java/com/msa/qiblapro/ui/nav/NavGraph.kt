@@ -29,30 +29,57 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.msa.qiblapro.R
+import com.msa.qiblapro.ui.about.AboutScreen
 import com.msa.qiblapro.ui.compass.CompassScreen
 import com.msa.qiblapro.ui.compass.QiblaViewModel
 import com.msa.qiblapro.ui.map.MapScreen
+import com.msa.qiblapro.ui.onboarding.OnboardingScreen
 import com.msa.qiblapro.ui.permissions.PermissionScreen
 import com.msa.qiblapro.ui.permissions.isLocationPermissionGranted
 import com.msa.qiblapro.ui.pro.ProBackground
 import com.msa.qiblapro.ui.settings.SettingsRoute
+import com.msa.qiblapro.ui.settings.SettingsViewModel
 
-private object Routes {
+object Routes {
+    const val ONBOARDING = "onboarding"
     const val PERMISSION = "permission"
     const val MAIN = "main"
     const val COMPASS = "compass"
     const val MAP = "map"
     const val SETTINGS = "settings"
+    const val ABOUT = "about"
 }
 
 @Composable
-fun AppNavGraph() {
+fun AppNavGraph(
+    hasSeenOnboarding: Boolean,
+    onOnboardingFinish: () -> Unit
+) {
     val rootNav = rememberNavController()
+
+    val startRoute = if (!hasSeenOnboarding) Routes.ONBOARDING else Routes.PERMISSION
 
     NavHost(
         navController = rootNav,
-        startDestination = Routes.PERMISSION
+        startDestination = startRoute
     ) {
+        composable(Routes.ONBOARDING) {
+            OnboardingScreen(
+                onFinish = {
+                    onOnboardingFinish()
+                    rootNav.navigate(Routes.PERMISSION) {
+                        popUpTo(Routes.ONBOARDING) { inclusive = true }
+                    }
+                },
+                onSkip = {
+                    onOnboardingFinish()
+                    rootNav.navigate(Routes.PERMISSION) {
+                        popUpTo(Routes.ONBOARDING) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(Routes.PERMISSION) {
             PermissionScreen(
                 onPermissionGranted = {
@@ -69,10 +96,17 @@ fun AppNavGraph() {
                 vm = vm,
                 onNavigateToPermission = {
                     rootNav.navigate(Routes.PERMISSION) {
-                        popUpTo(Routes.MAIN) { inclusive = true } inclusive = true }
+                        popUpTo(Routes.MAIN) { inclusive = true }
                     }
+                },
+                onNavigateToAbout = {
+                    rootNav.navigate(Routes.ABOUT)
                 }
             )
+        }
+
+        composable(Routes.ABOUT) {
+            AboutScreen(onBack = { rootNav.popBackStack() })
         }
     }
 }
@@ -80,7 +114,8 @@ fun AppNavGraph() {
 @Composable
 private fun MainScaffold(
     vm: QiblaViewModel,
-    onNavigateToPermission: () -> Unit
+    onNavigateToPermission: () -> Unit,
+    onNavigateToAbout: () -> Unit
 ) {
     val tabNav = rememberNavController()
     val context = LocalContext.current
@@ -162,7 +197,9 @@ private fun MainScaffold(
                     )
                 }
                 composable(Routes.MAP) { MapScreen(vm = vm) }
-                composable(Routes.SETTINGS) { SettingsRoute() }
+                composable(Routes.SETTINGS) {
+                    SettingsRoute(onNavigateToAbout = onNavigateToAbout)
+                }
             }
         }
     }

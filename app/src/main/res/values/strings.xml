@@ -7,6 +7,7 @@
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
     <string name="loading">Loading…</string>
+    <string name="try_again">Try Again</string>
 
     <!-- Bottom tabs -->
     <string name="tab_compass">Compass</string>
@@ -100,6 +101,9 @@
     <string name="haptic_pattern_short">Short tap</string>
     <string name="haptic_pattern_double">Double tap</string>
     <string name="haptic_pattern_long">Long pulse</string>
+    
+    <string name="haptic_cooldown_title">Vibration interval</string>
+    <string name="haptic_cooldown_desc">Delay between consecutive vibrations</string>
 
     <string name="feedback_sound_title">Sound</string>
     <string name="feedback_sound_desc">Play a subtle sound when aligned with Qibla</string>
@@ -153,4 +157,35 @@
     <string name="accent_blue">Neon Blue</string>
     <string name="accent_purple">Neon Purple</string>
     <string name="accent_pink">Neon Pink</string>
+
+    <!-- Onboarding -->
+    <string name="onb_title">Getting started</string>
+    <string name="onb_skip">Skip</string>
+    <string name="onb_back">Back</string>
+    <string name="onb_next">Next</string>
+    <string name="onb_start">Start</string>
+
+    <string name="onb_title_location">Enable Location</string>
+    <string name="onb_body_location">For best Qibla accuracy, turn on GPS and allow location permission.</string>
+
+    <string name="onb_title_calibration">Calibrate the Compass</string>
+    <string name="onb_body_calibration">If the compass feels off, move your phone in an ∞ (figure-8) motion.</string>
+
+    <string name="onb_title_map">Use the Map</string>
+    <string name="onb_body_map">If your device has no compass sensor, you can still find Qibla using the map.</string>
+
+    <string name="onb_tip">Tip</string>
+    <string name="onb_tip_location">Precise location improves direction and distance.</string>
+    <string name="onb_tip_calibration">Calibration helps reduce magnetic interference.</string>
+    <string name="onb_tip_map">Use Near Me to quickly pick a reference city.</string>
+
+    <!-- About -->
+    <string name="about_title">About</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_links">Links</string>
+    <string name="about_privacy">Privacy Policy</string>
+    <string name="about_contact">Contact support</string>
+
+    <string name="privacy_policy_url">https://example.com/privacy</string>
+    <string name="support_email">support@example.com</string>
 </resources>

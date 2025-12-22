@@ -31,7 +31,8 @@ import com.msa.qiblapro.util.haptics.Haptics
 
 @Composable
 fun SettingsRoute(
-    vm: SettingsViewModel = hiltViewModel()
+    vm: SettingsViewModel = hiltViewModel(),
+    onNavigateToAbout: () -> Unit
 ) {
     val s by vm.state.collectAsState()
 
@@ -54,7 +55,8 @@ fun SettingsRoute(
         onMapType = vm::setMapType,
         onShowIranCities = vm::setIranCities,
         onThemeMode = vm::setThemeMode,
-        onAccent = vm::setAccent
+        onAccent = vm::setAccent,
+        onOpenAbout = onNavigateToAbout
     )
 }
 
@@ -79,6 +81,7 @@ fun SettingsScreen(
     onShowIranCities: (Boolean) -> Unit,
     onThemeMode: (ThemeMode) -> Unit,
     onAccent: (NeonAccent) -> Unit,
+    onOpenAbout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -259,7 +262,7 @@ fun SettingsScreen(
                     )
 
                     ProIntSliderRow(
-                        title = "Cooldown", // Simplified, could use a string resource
+                        title = "Cooldown",
                         subtitle = "Delay between vibrations",
                         value = (state.hapticCooldownMs / 100).toInt(),
                         range = 5..50,
@@ -348,12 +351,40 @@ fun SettingsScreen(
                 )
             }
 
+            // --- About ---
+            AppCard(modifier = Modifier.fillMaxWidth()) {
+                AboutRow(
+                    icon = Icons.Default.Info,
+                    title = stringResource(R.string.about_title),
+                    onClick = onOpenAbout
+                )
+            }
+
             Spacer(Modifier.height(8.dp))
         }
     }
 }
 
 /* ---------- UI pieces ---------- */
+
+@Composable
+private fun AboutRow(
+    icon: ImageVector,
+    title: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        Text(text = title, style = MaterialTheme.typography.bodyLarge)
+    }
+}
 
 @Composable
 private fun hapticStrengthLabel(strength: Int): String = when (strength) {
