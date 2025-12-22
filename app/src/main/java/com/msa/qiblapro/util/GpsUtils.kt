@@ -6,27 +6,13 @@ import android.provider.Settings
 
 object GpsUtils {
 
-    /** آیا لوکیشن (GPS یا Network) روشن است؟ */
     fun isLocationEnabled(context: Context): Boolean {
-        val lm = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
-            ?: return false
-
-        val gps = try {
-            lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        } catch (_: Exception) {
-            false
-        }
-
-        val network = try {
-            lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-        } catch (_: Exception) {
-            false
-        }
-
+        val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val gps = try { lm.isProviderEnabled(LocationManager.GPS_PROVIDER) } catch (_: Exception) { false }
+        val network = try { lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER) } catch (_: Exception) { false }
         return gps || network
     }
 
-    /** آیا حالت پرواز روشن است؟ */
     fun isAirplaneModeOn(context: Context): Boolean {
         return try {
             Settings.Global.getInt(
@@ -37,5 +23,15 @@ object GpsUtils {
         } catch (_: Exception) {
             false
         }
+    }
+
+    fun openLocationSettings(context: Context) {
+        try {
+            context.startActivity(
+                android.content.Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
+                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+            )
+        } catch (_: Exception) {}
     }
 }

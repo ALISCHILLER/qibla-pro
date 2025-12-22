@@ -5,19 +5,36 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.*
-import com.msa.qiblapro.ui.pro.ProBackground
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.msa.qiblapro.R
+import com.msa.qiblapro.ui.compass.CompassScreen
 import com.msa.qiblapro.ui.compass.QiblaViewModel
 import com.msa.qiblapro.ui.map.MapScreen
 import com.msa.qiblapro.ui.permissions.PermissionScreen
+import com.msa.qiblapro.ui.permissions.isLocationPermissionGranted
+import com.msa.qiblapro.ui.pro.ProBackground
 import com.msa.qiblapro.ui.settings.SettingsRoute
 
 private object Routes {
@@ -30,18 +47,16 @@ private object Routes {
 
 @Composable
 fun AppNavGraph() {
-    val nav = rememberNavController()
+    val rootNav = rememberNavController()
 
     NavHost(
-        navController = nav,
+        navController = rootNav,
         startDestination = Routes.PERMISSION
     ) {
         composable(Routes.PERMISSION) {
-            val vm: QiblaViewModel = hiltViewModel()
             PermissionScreen(
                 onPermissionGranted = {
-                    vm.setPermissionGranted(true)
-                    nav.navigate(Routes.MAIN) {
+                    rootNav.navigate(Routes.MAIN) {
                         popUpTo(Routes.PERMISSION) { inclusive = true }
                     }
                 }
@@ -49,57 +64,72 @@ fun AppNavGraph() {
         }
 
         composable(Routes.MAIN) {
-            MainScaffold()
+            val vm: QiblaViewModel = hiltViewModel()
+            MainScaffold(
+                vm = vm,
+                onNavigateToPermission = {
+                    rootNav.navigate(Routes.PERMISSION) {
+                        popUpTo(Routes.MAIN) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }
 
 @Composable
-private fun MainScaffold() {
-    val nav = rememberNavController()
+private fun MainScaffold(
+    vm: QiblaViewModel,
+    onNavigateToPermission: () -> Unit
+) {
+    val tabNav = rememberNavController()
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    // ✅ Permission یک‌کاسه: هر بار برگشت به اپ، وضعیت permission چک میشه
+    DisposableEffect(lifecycleOwner) {
+        val obs = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val granted = isLocationPermissionGranted(context)
+                vm.setPermissionGranted(granted)
+                if (!granted) onNavigateToPermission()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(obs)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(obs) }
+    }
 
     val items = listOf(
-        Routes.COMPASS to Pair(Icons.Filled.Explore, "Compass"),
-        Routes.MAP to Pair(Icons.Filled.Map, "Map"),
-        Routes.SETTINGS to Pair(Icons.Filled.Settings, "Settings"),
+        Routes.COMPASS to Pair(Icons.Filled.Explore, R.string.tab_compass),
+        Routes.MAP to Pair(Icons.Filled.Map, R.string.tab_map),
+        Routes.SETTINGS to Pair(Icons.Filled.Settings, R.string.tab_settings),
     )
 
-    // ✅ فقط یک ProBackground در بالاترین سطح
     ProBackground {
         Scaffold(
-            // 🔑 خیلی مهم
             containerColor = Color.Transparent,
-
             bottomBar = {
                 NavigationBar(
-                    // 🔑 شفاف واقعی
                     containerColor = Color.Black.copy(alpha = 0.22f),
                     tonalElevation = 0.dp
                 ) {
-                    val current by nav.currentBackStackEntryAsState()
+                    val current by tabNav.currentBackStackEntryAsState()
                     val currentRoute = current?.destination?.route
 
-                    items.forEach { (route, iconTitle) ->
+                    items.forEach { (route, iconAndTitle) ->
                         NavigationBarItem(
                             selected = currentRoute == route,
                             onClick = {
-                                nav.navigate(route) {
-                                    popUpTo(nav.graph.findStartDestination().id) {
+                                tabNav.navigate(route) {
+                                    popUpTo(tabNav.graph.findStartDestination().id) {
                                         saveState = true
                                     }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
                             },
-                            icon = {
-                                Icon(
-                                    iconTitle.first,
-                                    contentDescription = iconTitle.second
-                                )
-                            },
-                            label = {
-                                Text(iconTitle.second)
-                            },
+                            icon = { Icon(iconAndTitle.first, contentDescription = null) },
+                            label = { Text(stringResource(iconAndTitle.second)) },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = Color.White,
                                 selectedTextColor = Color.White,
@@ -113,20 +143,13 @@ private fun MainScaffold() {
             }
         ) { padding ->
             NavHost(
-                navController = nav,
+                navController = tabNav,
                 startDestination = Routes.COMPASS,
                 modifier = Modifier.padding(padding)
             ) {
-                composable(Routes.COMPASS) {
-                    // ❌ ProBackground اینجا نباید باشه
-                    _root_ide_package_.com.msa.qiblapro.ui.compass.CompassScreen()
-                }
-                composable(Routes.MAP) {
-                    MapScreen()
-                }
-                composable(Routes.SETTINGS) {
-                    SettingsRoute()
-                }
+                composable(Routes.COMPASS) { CompassScreen(vm = vm) }
+                composable(Routes.MAP) { MapScreen(vm = vm) }
+                composable(Routes.SETTINGS) { SettingsRoute() }
             }
         }
     }

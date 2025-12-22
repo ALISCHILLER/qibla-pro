@@ -30,6 +30,8 @@ data class QiblaUiState(
     val enableSound: Boolean = true,
     val mapType: Int = 1,
     val showIranCities: Boolean = true,
+    val neonMapStyle: Boolean = true,
+
     val showGpsPrompt: Boolean = true,
     val batterySaverMode: Boolean = false,
     val bgUpdateFreqSec: Int = 5,

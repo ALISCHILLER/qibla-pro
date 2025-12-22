@@ -23,7 +23,8 @@ data class SettingsUiState(
     val mapType: Int = 1,
     val showIranCities: Boolean = true,
     val enableVibration: Boolean = true,
-    val enableSound: Boolean = false
+    val enableSound: Boolean = false,
+    val neonMapStyle: Boolean = true
 )
 
 @HiltViewModel
@@ -46,7 +47,8 @@ class SettingsViewModel @Inject constructor(
                 mapType = s.mapType,
                 showIranCities = s.showIranCities,
                 enableVibration = s.enableVibration,
-                enableSound = s.enableSound
+                enableSound = s.enableSound,
+                neonMapStyle = s.neonMapStyle
             )
         }
         .stateIn(
@@ -72,4 +74,5 @@ class SettingsViewModel @Inject constructor(
     fun setIranCities(v: Boolean) = update { setShowIranCities(v) }
     fun setVibration(v: Boolean) = update { setVibration(v) }
     fun setSound(v: Boolean) = update { setSound(v) }
+    fun setNeonMapStyle(v: Boolean) = update { setNeonMapStyle(v) }
 }

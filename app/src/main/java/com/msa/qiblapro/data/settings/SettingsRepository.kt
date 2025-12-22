@@ -24,7 +24,8 @@ data class AppSettings(
     val enableVibration: Boolean = true,
     val enableSound: Boolean = true,
     val mapType: Int = 1,
-    val showIranCities: Boolean = true
+    val showIranCities: Boolean = true,
+    val neonMapStyle: Boolean = true
 )
 
 class SettingsRepository(private val ctx: Context) {
@@ -46,6 +47,8 @@ class SettingsRepository(private val ctx: Context) {
         val ENABLE_SOUND = booleanPreferencesKey("enable_sound")
         val MAP_TYPE = intPreferencesKey("map_type")
         val SHOW_IRAN_CITIES = booleanPreferencesKey("show_iran_cities")
+
+        val NEON_MAP_STYLE = booleanPreferencesKey("neon_map_style")
     }
 
     val settingsFlow: Flow<AppSettings> = ctx.ds.data.map { p ->
@@ -62,31 +65,27 @@ class SettingsRepository(private val ctx: Context) {
             enableVibration = p[Keys.ENABLE_VIBRATION] ?: true,
             enableSound = p[Keys.ENABLE_SOUND] ?: true,
             mapType = p[Keys.MAP_TYPE] ?: 1,
-            showIranCities = p[Keys.SHOW_IRAN_CITIES] ?: true
+            showIranCities = p[Keys.SHOW_IRAN_CITIES] ?: true,
+            neonMapStyle = p[Keys.NEON_MAP_STYLE] ?: true
         )
     }
 
     suspend fun setUseTrueNorth(v: Boolean) = ctx.ds.edit { it[Keys.USE_TRUE_NORTH] = v }
     suspend fun setSmoothing(v: Float) = ctx.ds.edit { it[Keys.SMOOTHING] = v.coerceIn(0f, 1f) }
-    suspend fun setAlignmentTolerance(v: Int) =
-        ctx.ds.edit { it[Keys.ALIGN_TOL] = v.coerceIn(2, 20) }
+    suspend fun setAlignmentTolerance(v: Int) = ctx.ds.edit { it[Keys.ALIGN_TOL] = v.coerceIn(2, 20) }
 
     suspend fun setShowGpsPrompt(v: Boolean) = ctx.ds.edit { it[Keys.SHOW_GPS_PROMPT] = v }
     suspend fun setBatterySaver(v: Boolean) = ctx.ds.edit { it[Keys.BATTERY_SAVER] = v }
-    suspend fun setBgFreqSec(v: Int) =
-        ctx.ds.edit { it[Keys.BG_FREQ_SEC] = v.coerceIn(2, 30) }
+    suspend fun setBgFreqSec(v: Int) = ctx.ds.edit { it[Keys.BG_FREQ_SEC] = v.coerceIn(2, 30) }
+    suspend fun setLowPowerLocation(v: Boolean) = ctx.ds.edit { it[Keys.LOW_POWER_LOC] = v }
 
-    suspend fun setLowPowerLocation(v: Boolean) =
-        ctx.ds.edit { it[Keys.LOW_POWER_LOC] = v }
-
-    suspend fun setAutoCalibration(v: Boolean) =
-        ctx.ds.edit { it[Keys.AUTO_CALIB] = v }
-
-    suspend fun setCalibrationThreshold(v: Int) =
-        ctx.ds.edit { it[Keys.CALIB_THRESHOLD] = v.coerceIn(1, 10) }
+    suspend fun setAutoCalibration(v: Boolean) = ctx.ds.edit { it[Keys.AUTO_CALIB] = v }
+    suspend fun setCalibrationThreshold(v: Int) = ctx.ds.edit { it[Keys.CALIB_THRESHOLD] = v.coerceIn(1, 10) }
 
     suspend fun setVibration(v: Boolean) = ctx.ds.edit { it[Keys.ENABLE_VIBRATION] = v }
     suspend fun setSound(v: Boolean) = ctx.ds.edit { it[Keys.ENABLE_SOUND] = v }
-    suspend fun setMapType(v: Int) = ctx.ds.edit { it[Keys.MAP_TYPE] = v }
+
+    suspend fun setMapType(v: Int) = ctx.ds.edit { it[Keys.MAP_TYPE] = v.coerceIn(1, 4) }
     suspend fun setShowIranCities(v: Boolean) = ctx.ds.edit { it[Keys.SHOW_IRAN_CITIES] = v }
+    suspend fun setNeonMapStyle(v: Boolean) = ctx.ds.edit { it[Keys.NEON_MAP_STYLE] = v }
 }

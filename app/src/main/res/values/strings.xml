@@ -47,6 +47,8 @@
     <!-- Compass -->
     <string name="facing_qibla">Facing Qibla ✅</string>
     <string name="rotate_to_qibla">Rotate %1$d° to face Qibla</string>
+    <string name="calibration_title">Calibration needed</string>
+    <string name="calibration_hint">Wave your phone in a Figure-8 pattern to calibrate sensors</string>
 
     <!-- Info labels -->
     <string name="qibla_direction">Qibla angle</string>
@@ -106,7 +108,19 @@
     <string name="map_section_title">Map</string>
     <string name="show_iran_cities_title">Show Iranian cities</string>
     <string name="show_iran_cities_desc">Highlight major cities in Iran on the map</string>
+    <string name="neon_map_style_title">Neon style</string>
+    <string name="neon_map_style_desc">Cyberpunk night style for the map</string>
 
-    <string name="map_type_title">Map style</string>
-    <string name="map_type_desc">Choose between normal, satellite, or terrain view</string>
+    <string name="map_type_title">Map type</string>
+    <string name="map_type_desc">1: Normal, 2: Satellite, 3: Terrain, 4: Hybrid</string>
+
+    <string name="map_permission_title">No location permission</string>
+    <string name="map_permission_body">Map needs location access to show your position and the route to Kaaba.</string>
+    <string name="map_waiting_title">Waiting for location…</string>
+    <string name="map_waiting_body">Acquiring your position to draw the Qibla path.</string>
+    <string name="map_gps_off_title">GPS is off</string>
+    <string name="map_gps_off_body">Please enable GPS to see your location on the map.</string>
+    <string name="map_fit">Fit path</string>
+    <string name="kaaba_title">Holy Kaaba</string>
+    <string name="qibla_title">Qibla Direction</string>
 </resources>
