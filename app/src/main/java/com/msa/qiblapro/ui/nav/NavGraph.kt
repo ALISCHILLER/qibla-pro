@@ -15,7 +15,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
 import com.msa.qiblapro.ui.pro.ProBackground
-import com.msa.qiblapro.ui.screens.*
 import com.msa.qiblapro.ui.compass.QiblaViewModel
 import com.msa.qiblapro.ui.map.MapScreen
 import com.msa.qiblapro.ui.permissions.PermissionScreen
