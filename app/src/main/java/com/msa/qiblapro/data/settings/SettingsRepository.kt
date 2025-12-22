@@ -2,31 +2,15 @@ package com.msa.qiblapro.data.settings
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 private val Context.ds by preferencesDataStore(name = "qibla_settings")
-
-data class AppSettings(
-    val useTrueNorth: Boolean = true,
-    val smoothing: Float = 0.65f,
-    val alignmentToleranceDeg: Int = 6,
-    val showGpsPrompt: Boolean = true,
-    val batterySaverMode: Boolean = false,
-    val bgUpdateFreqSec: Int = 5,
-    val useLowPowerLocation: Boolean = true,
-    val autoCalibration: Boolean = true,
-    val calibrationThreshold: Int = 3,
-    val enableVibration: Boolean = true,
-    val enableSound: Boolean = true,
-    val mapType: Int = 1,
-    val showIranCities: Boolean = true,
-    val neonMapStyle: Boolean = true
-)
 
 class SettingsRepository(private val ctx: Context) {
 
@@ -44,11 +28,19 @@ class SettingsRepository(private val ctx: Context) {
         val CALIB_THRESHOLD = intPreferencesKey("calib_threshold")
 
         val ENABLE_VIBRATION = booleanPreferencesKey("enable_vibration")
+        val HAPTIC_STRENGTH = intPreferencesKey("haptic_strength")
+        val HAPTIC_PATTERN = intPreferencesKey("haptic_pattern")
+        val HAPTIC_COOLDOWN = longPreferencesKey("haptic_cooldown")
+        
         val ENABLE_SOUND = booleanPreferencesKey("enable_sound")
         val MAP_TYPE = intPreferencesKey("map_type")
         val SHOW_IRAN_CITIES = booleanPreferencesKey("show_iran_cities")
 
         val NEON_MAP_STYLE = booleanPreferencesKey("neon_map_style")
+        
+        val THEME_MODE = intPreferencesKey("theme_mode")
+        val ACCENT_TYPE = intPreferencesKey("accent_type")
+        val HAS_SEEN_ONBOARDING = booleanPreferencesKey("has_seen_onboarding")
     }
 
     val settingsFlow: Flow<AppSettings> = ctx.ds.data.map { p ->
@@ -63,10 +55,16 @@ class SettingsRepository(private val ctx: Context) {
             autoCalibration = p[Keys.AUTO_CALIB] ?: true,
             calibrationThreshold = p[Keys.CALIB_THRESHOLD] ?: 3,
             enableVibration = p[Keys.ENABLE_VIBRATION] ?: true,
+            hapticStrength = p[Keys.HAPTIC_STRENGTH] ?: 2,
+            hapticPattern = p[Keys.HAPTIC_PATTERN] ?: 1,
+            hapticCooldownMs = p[Keys.HAPTIC_COOLDOWN] ?: 1500L,
             enableSound = p[Keys.ENABLE_SOUND] ?: true,
             mapType = p[Keys.MAP_TYPE] ?: 1,
             showIranCities = p[Keys.SHOW_IRAN_CITIES] ?: true,
-            neonMapStyle = p[Keys.NEON_MAP_STYLE] ?: true
+            neonMapStyle = p[Keys.NEON_MAP_STYLE] ?: true,
+            themeMode = ThemeMode.entries.getOrElse(p[Keys.THEME_MODE] ?: 2) { ThemeMode.DARK },
+            accent = NeonAccent.entries.getOrElse(p[Keys.ACCENT_TYPE] ?: 0) { NeonAccent.GREEN },
+            hasSeenOnboarding = p[Keys.HAS_SEEN_ONBOARDING] ?: false
         )
     }
 
@@ -83,9 +81,17 @@ class SettingsRepository(private val ctx: Context) {
     suspend fun setCalibrationThreshold(v: Int) = ctx.ds.edit { it[Keys.CALIB_THRESHOLD] = v.coerceIn(1, 10) }
 
     suspend fun setVibration(v: Boolean) = ctx.ds.edit { it[Keys.ENABLE_VIBRATION] = v }
+    suspend fun setHapticStrength(v: Int) = ctx.ds.edit { it[Keys.HAPTIC_STRENGTH] = v.coerceIn(1, 3) }
+    suspend fun setHapticPattern(v: Int) = ctx.ds.edit { it[Keys.HAPTIC_PATTERN] = v.coerceIn(1, 3) }
+    suspend fun setHapticCooldown(v: Long) = ctx.ds.edit { it[Keys.HAPTIC_COOLDOWN] = v }
+
     suspend fun setSound(v: Boolean) = ctx.ds.edit { it[Keys.ENABLE_SOUND] = v }
 
     suspend fun setMapType(v: Int) = ctx.ds.edit { it[Keys.MAP_TYPE] = v.coerceIn(1, 4) }
     suspend fun setShowIranCities(v: Boolean) = ctx.ds.edit { it[Keys.SHOW_IRAN_CITIES] = v }
     suspend fun setNeonMapStyle(v: Boolean) = ctx.ds.edit { it[Keys.NEON_MAP_STYLE] = v }
+    
+    suspend fun setThemeMode(mode: ThemeMode) = ctx.ds.edit { it[Keys.THEME_MODE] = mode.ordinal }
+    suspend fun setAccent(accent: NeonAccent) = ctx.ds.edit { it[Keys.ACCENT_TYPE] = accent.ordinal }
+    suspend fun setHasSeenOnboarding(v: Boolean) = ctx.ds.edit { it[Keys.HAS_SEEN_ONBOARDING] = v }
 }

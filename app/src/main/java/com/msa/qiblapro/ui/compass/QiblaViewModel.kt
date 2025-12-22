@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -48,6 +49,14 @@ class QiblaViewModel @Inject constructor(
 
     private val _events = MutableSharedFlow<AppEvent>(extraBufferCapacity = 16)
     val events: SharedFlow<AppEvent> = _events.asSharedFlow()
+
+    private val compassRestart = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    private var calibrationGuideDismissedUntilMs: Long = 0L
+
+    // آخرین پارامترها برای کالبک‌های ویبره
+    private var lastHapticStrength: Int = 2
+    private var lastHapticPattern: Int = 1
 
     // آخرین پارامترها برای محاسبه دقیق
     private var lastDeclinationDeg: Float = 0f
@@ -77,12 +86,16 @@ class QiblaViewModel @Inject constructor(
     private fun observeSettingsToState() {
         viewModelScope.launch {
             settingsRepo.settingsFlow.collect { s ->
+                lastHapticStrength = s.hapticStrength
+                lastHapticPattern = s.hapticPattern
                 _state.update {
                     it.copy(
                         useTrueNorth = s.useTrueNorth,
                         smoothing = s.smoothing,
                         alignTolerance = s.alignmentToleranceDeg,
                         enableVibration = s.enableVibration,
+                        hapticStrength = s.hapticStrength,
+                        hapticPattern = s.hapticPattern,
                         enableSound = s.enableSound,
                         mapType = s.mapType,
                         showIranCities = s.showIranCities,
@@ -142,9 +155,13 @@ class QiblaViewModel @Inject constructor(
 
     private fun observeCompass() {
         viewModelScope.launch {
-            combine(_permission, settingsRepo.settingsFlow) { granted, settings ->
-                granted to settings
-            }
+            compassRestart
+                .onStart { emit(Unit) }
+                .flatMapLatest {
+                    combine(_permission, settingsRepo.settingsFlow) { granted, settings ->
+                        granted to settings
+                    }
+                }
                 .flatMapLatest { (granted, settings) ->
                     if (!granted) emptyFlow()
                     else {
@@ -160,7 +177,11 @@ class QiblaViewModel @Inject constructor(
                             .conflate()
                             .sample(sampleMs)
                             .map { reading -> settings to reading }
-                            .catch { emit(settings to CompassReading(0f, 0)) }
+                            .catch { e ->
+                                if (e is IllegalStateException) {
+                                    _state.update { it.copy(isSensorAvailable = false) }
+                                }
+                            }
                     }
                 }
                 .collect { (settings, reading) ->
@@ -170,10 +191,13 @@ class QiblaViewModel @Inject constructor(
     }
 
     private fun onCompass(reading: CompassReading, settings: com.msa.qiblapro.data.settings.AppSettings) {
+        if (!_state.value.isSensorAvailable) {
+            _state.update { it.copy(isSensorAvailable = true) }
+        }
+
         val raw = reading.headingMagneticDeg
         val current = lastHeadingMag
 
-        // ✅ smoothing (زاویه-aware) + outlier rejection
         val smoothingFactor = settings.smoothing.coerceIn(0f, 1f)
         val t = 0.18f + (1f - smoothingFactor) * 0.72f // 0.18..0.90
 
@@ -188,12 +212,10 @@ class QiblaViewModel @Inject constructor(
         val decl = if (settings.useTrueNorth) lastDeclinationDeg else 0f
         val trueHeading = (nextMag + decl + 360f) % 360f
 
-        // Qibla error + facing
         val qibla = lastQiblaDeg
         val error = QiblaMath.rotationErrorDeg(trueHeading, qibla)
         val tol = settings.alignmentToleranceDeg.coerceIn(2, 20)
 
-        // ✅ Hysteresis: وارد شدن به حالت facing سخت‌تر، خارج شدن کمی راحت‌تر
         val enterTol = tol
         val exitTol = (tol + 3).coerceAtMost(25)
 
@@ -202,19 +224,17 @@ class QiblaViewModel @Inject constructor(
         // Edge-trigger برای haptics/sound
         if (isFacingNow && !facingLatched) {
             facingLatched = true
-            if (settings.enableVibration) _events.tryEmit(AppEvent.Vibrate)
+            if (settings.enableVibration) {
+                _events.tryEmit(AppEvent.VibratePattern(settings.hapticStrength, settings.hapticPattern))
+            }
             if (settings.enableSound) _events.tryEmit(AppEvent.Beep)
         } else if (!isFacingNow && facingLatched) {
             facingLatched = false
         }
 
-        // ✅ Calibration by variance window (edge trigger)
         headingWindow.add(trueHeading)
         val variance = if (headingWindow.isReady()) headingWindow.circularVariance() else 0f
-
         val strikesNeeded = settings.calibrationThreshold.coerceIn(1, 10)
-
-        // threshold ها با battery saver کمی ملایم‌تر
         val varianceOn = if (settings.batterySaverMode) 0.16f else 0.12f
         val varianceOff = varianceOn * 0.65f
 
@@ -230,7 +250,6 @@ class QiblaViewModel @Inject constructor(
             varianceStrikes >= strikesNeeded || accuracyStrikes >= strikesNeeded
         )
 
-        // latch + hysteresis
         if (needsNow) {
             calibrationLatched = true
         } else if (calibrationLatched && headingWindow.isReady() && variance < varianceOff && reading.accuracy != 0) {
@@ -238,6 +257,8 @@ class QiblaViewModel @Inject constructor(
         }
 
         val needsCalibration = calibrationLatched || needsNow
+        val now = System.currentTimeMillis()
+        val allowGuide = now >= calibrationGuideDismissedUntilMs
 
         _state.update {
             it.copy(
@@ -245,9 +266,19 @@ class QiblaViewModel @Inject constructor(
                 headingTrue = trueHeading,
                 rotationToQibla = error,
                 facingQibla = isFacingNow,
-                needsCalibration = needsCalibration
+                needsCalibration = needsCalibration,
+                showCalibrationGuide = needsCalibration && allowGuide && it.isSensorAvailable
             )
         }
+    }
+
+    fun dismissCalibrationGuide(minutes: Int = 10) {
+        calibrationGuideDismissedUntilMs = System.currentTimeMillis() + minutes * 60_000L
+        _state.update { it.copy(showCalibrationGuide = false) }
+    }
+
+    fun restartCompass() {
+        compassRestart.tryEmit(Unit)
     }
 
     fun refreshSensors() {
@@ -263,14 +294,12 @@ class QiblaViewModel @Inject constructor(
         _state.update { it.copy(showGpsDialog = false) }
     }
 
-    // Settings setters (برای MapScreen هم لازم داریم)
     private fun io(block: suspend () -> Unit) = viewModelScope.launch { block() }
 
     fun setMapType(v: Int) = io { settingsRepo.setMapType(v) }
     fun setIranCities(v: Boolean) = io { settingsRepo.setShowIranCities(v) }
     fun setNeonMapStyle(v: Boolean) = io { settingsRepo.setNeonMapStyle(v) }
 
-    // -------- angle helpers --------
     private fun lerpAngle(a: Float, b: Float, t: Float): Float {
         val diff = angleDiff(a, b)
         return (a + diff * t + 360f) % 360f
@@ -308,7 +337,7 @@ class QiblaViewModel @Inject constructor(
             }
             val n = filled.toDouble().coerceAtLeast(1.0)
             val r = sqrt(sumX * sumX + sumY * sumY) / n
-            return (1.0 - r).toFloat() // 0 = stable, 1 = jitter
+            return (1.0 - r).toFloat()
         }
     }
 }

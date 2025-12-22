@@ -109,4 +109,9 @@
 
     <string name="map_type_title">نمط الخريطة</string>
     <string name="map_type_desc">اختيار بين خريطة عادية، قمر صناعي، أو تضاريس</string>
+
+    <string name="map_type_normal">عادية</string>
+    <string name="map_type_satellite">قمر صناعي</string>
+    <string name="map_type_terrain">تضاريس</string>
+    <string name="map_type_hybrid">هجينة</string>
 </resources>

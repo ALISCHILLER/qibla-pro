@@ -2,7 +2,9 @@ package com.msa.qiblapro.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.msa.qiblapro.data.settings.NeonAccent
 import com.msa.qiblapro.data.settings.SettingsRepository
+import com.msa.qiblapro.data.settings.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
@@ -23,8 +25,14 @@ data class SettingsUiState(
     val mapType: Int = 1,
     val showIranCities: Boolean = true,
     val enableVibration: Boolean = true,
+    val hapticStrength: Int = 2,
+    val hapticPattern: Int = 1,
+    val hapticCooldownMs: Long = 1500,
     val enableSound: Boolean = false,
-    val neonMapStyle: Boolean = true
+    val neonMapStyle: Boolean = true,
+    val themeMode: ThemeMode = ThemeMode.DARK,
+    val accent: NeonAccent = NeonAccent.GREEN,
+    val hasSeenOnboarding: Boolean = false
 )
 
 @HiltViewModel
@@ -47,8 +55,14 @@ class SettingsViewModel @Inject constructor(
                 mapType = s.mapType,
                 showIranCities = s.showIranCities,
                 enableVibration = s.enableVibration,
+                hapticStrength = s.hapticStrength,
+                hapticPattern = s.hapticPattern,
+                hapticCooldownMs = s.hapticCooldownMs,
                 enableSound = s.enableSound,
-                neonMapStyle = s.neonMapStyle
+                neonMapStyle = s.neonMapStyle,
+                themeMode = s.themeMode,
+                accent = s.accent,
+                hasSeenOnboarding = s.hasSeenOnboarding
             )
         }
         .stateIn(
@@ -73,6 +87,12 @@ class SettingsViewModel @Inject constructor(
     fun setMapType(v: Int) = update { setMapType(v) }
     fun setIranCities(v: Boolean) = update { setShowIranCities(v) }
     fun setVibration(v: Boolean) = update { setVibration(v) }
+    fun setHapticStrength(v: Int) = update { setHapticStrength(v) }
+    fun setHapticPattern(v: Int) = update { setHapticPattern(v) }
+    fun setHapticCooldown(v: Long) = update { setHapticCooldown(v) }
     fun setSound(v: Boolean) = update { setSound(v) }
     fun setNeonMapStyle(v: Boolean) = update { setNeonMapStyle(v) }
+    fun setThemeMode(mode: ThemeMode) = update { setThemeMode(mode) }
+    fun setAccent(accent: NeonAccent) = update { setAccent(accent) }
+    fun setHasSeenOnboarding(v: Boolean) = update { setHasSeenOnboarding(v) }
 }

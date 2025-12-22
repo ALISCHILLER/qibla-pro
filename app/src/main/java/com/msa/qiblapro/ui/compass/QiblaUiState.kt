@@ -18,6 +18,8 @@ data class QiblaUiState(
     val facingQibla: Boolean = false,
 
     val needsCalibration: Boolean = false,
+    val showCalibrationGuide: Boolean = false,
+    val isSensorAvailable: Boolean = true,
 
     val gpsEnabled: Boolean = true,
     val showGpsDialog: Boolean = false,
@@ -27,6 +29,8 @@ data class QiblaUiState(
     val smoothing: Float = 0.65f,
     val alignTolerance: Int = 6,
     val enableVibration: Boolean = true,
+    val hapticStrength: Int = 2,
+    val hapticPattern: Int = 1,
     val enableSound: Boolean = true,
     val mapType: Int = 1,
     val showIranCities: Boolean = true,

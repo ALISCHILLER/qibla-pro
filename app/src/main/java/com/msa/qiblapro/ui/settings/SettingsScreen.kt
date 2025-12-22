@@ -1,30 +1,33 @@
 package com.msa.qiblapro.ui.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BatterySaver
-import androidx.compose.material.icons.filled.CompassCalibration
-import androidx.compose.material.icons.filled.GpsFixed
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.msa.qiblapro.R
+import com.msa.qiblapro.data.settings.NeonAccent
+import com.msa.qiblapro.data.settings.ThemeMode
 import com.msa.qiblapro.ui.pro.AppCard
 import com.msa.qiblapro.ui.pro.ProBackground
+import com.msa.qiblapro.util.haptics.Haptics
 
 @Composable
 fun SettingsRoute(
@@ -44,9 +47,14 @@ fun SettingsRoute(
         onAutoCalibration = vm::setAutoCalib,
         onCalibrationThreshold = vm::setCalibThreshold,
         onVibration = vm::setVibration,
+        onHapticStrength = vm::setHapticStrength,
+        onHapticPattern = vm::setHapticPattern,
+        onHapticCooldown = vm::setHapticCooldown,
         onSound = vm::setSound,
         onMapType = vm::setMapType,
-        onShowIranCities = vm::setIranCities
+        onShowIranCities = vm::setIranCities,
+        onThemeMode = vm::setThemeMode,
+        onAccent = vm::setAccent
     )
 }
 
@@ -63,11 +71,18 @@ fun SettingsScreen(
     onAutoCalibration: (Boolean) -> Unit,
     onCalibrationThreshold: (Int) -> Unit,
     onVibration: (Boolean) -> Unit,
+    onHapticStrength: (Int) -> Unit,
+    onHapticPattern: (Int) -> Unit,
+    onHapticCooldown: (Long) -> Unit,
     onSound: (Boolean) -> Unit,
     onMapType: (Int) -> Unit,
     onShowIranCities: (Boolean) -> Unit,
+    onThemeMode: (ThemeMode) -> Unit,
+    onAccent: (NeonAccent) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
     ProBackground(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -82,10 +97,78 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
+            // --- Appearance ---
+            AppCard(modifier = Modifier.fillMaxWidth()) {
+                SectionHeader(
+                    icon = Icons.Default.Palette,
+                    title = stringResource(R.string.appearance_section_title)
+                )
+
+                Text(
+                    text = stringResource(R.string.theme_mode_title),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ThemeMode.entries.forEach { mode ->
+                        val label = when (mode) {
+                            ThemeMode.SYSTEM -> stringResource(R.string.theme_mode_system)
+                            ThemeMode.LIGHT -> stringResource(R.string.theme_mode_light)
+                            ThemeMode.DARK -> stringResource(R.string.theme_mode_dark)
+                        }
+                        FilterChip(
+                            selected = state.themeMode == mode,
+                            onClick = { onThemeMode(mode) },
+                            label = { Text(label) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                Text(
+                    text = stringResource(R.string.accent_color_title),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    NeonAccent.entries.forEach { accent ->
+                        val accentColor = when (accent) {
+                            NeonAccent.GREEN -> Color(0xFF39FFB6)
+                            NeonAccent.BLUE -> Color(0xFF00C2FF)
+                            NeonAccent.PURPLE -> Color(0xFFBD00FF)
+                            NeonAccent.PINK -> Color(0xFFFF00E5)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(accentColor)
+                                .border(
+                                    width = if (state.accent == accent) 3.dp else 0.dp,
+                                    color = Color.White,
+                                    shape = CircleShape
+                                )
+                                .clickable {
+                                    onAccent(accent)
+                                    Haptics.vibrate(context, state.hapticStrength, state.hapticPattern)
+                                }
+                        )
+                    }
+                }
+            }
+
             // --- Compass ---
             AppCard(modifier = Modifier.fillMaxWidth()) {
                 SectionHeader(
-                    icon = Icons.Filled.CompassCalibration,
+                    icon = Icons.Default.CompassCalibration,
                     title = stringResource(R.string.compass_settings)
                 )
 
@@ -136,10 +219,67 @@ fun SettingsScreen(
                 )
             }
 
+            // --- Feedback / Haptics ---
+            AppCard(modifier = Modifier.fillMaxWidth()) {
+                SectionHeader(
+                    icon = Icons.Default.Vibration,
+                    title = stringResource(R.string.feedback_section_title)
+                )
+
+                ProSwitchRow(
+                    title = stringResource(R.string.feedback_vibration_title),
+                    subtitle = stringResource(R.string.feedback_vibration_desc),
+                    checked = state.enableVibration,
+                    onCheckedChange = onVibration
+                )
+
+                if (state.enableVibration) {
+                    ProIntSliderRow(
+                        title = stringResource(R.string.haptic_strength_title),
+                        subtitle = "",
+                        value = state.hapticStrength,
+                        range = 1..3,
+                        valueText = hapticStrengthLabel(state.hapticStrength),
+                        onValueChange = {
+                            onHapticStrength(it)
+                            Haptics.vibrate(context, it, state.hapticPattern)
+                        }
+                    )
+
+                    ProIntSliderRow(
+                        title = stringResource(R.string.haptic_pattern_title),
+                        subtitle = "",
+                        value = state.hapticPattern,
+                        range = 1..3,
+                        valueText = hapticPatternLabel(state.hapticPattern),
+                        onValueChange = {
+                            onHapticPattern(it)
+                            Haptics.vibrate(context, state.hapticStrength, it)
+                        }
+                    )
+
+                    ProIntSliderRow(
+                        title = "Cooldown", // Simplified, could use a string resource
+                        subtitle = "Delay between vibrations",
+                        value = (state.hapticCooldownMs / 100).toInt(),
+                        range = 5..50,
+                        valueText = "${state.hapticCooldownMs} ms",
+                        onValueChange = { onHapticCooldown(it.toLong() * 100) }
+                    )
+                }
+
+                ProSwitchRow(
+                    title = stringResource(R.string.feedback_sound_title),
+                    subtitle = stringResource(R.string.feedback_sound_desc),
+                    checked = state.enableSound,
+                    onCheckedChange = onSound
+                )
+            }
+
             // --- GPS / Location ---
             AppCard(modifier = Modifier.fillMaxWidth()) {
                 SectionHeader(
-                    icon = Icons.Filled.GpsFixed,
+                    icon = Icons.Default.GpsFixed,
                     title = stringResource(R.string.gps_section)
                 )
 
@@ -158,32 +298,10 @@ fun SettingsScreen(
                 )
             }
 
-            // --- Feedback / Haptics ---
-            AppCard(modifier = Modifier.fillMaxWidth()) {
-                SectionHeader(
-                    icon = Icons.Filled.BatterySaver, // می‌تونی آیکون بهتری بذاری مثل Volume/Vibration
-                    title = stringResource(R.string.feedback_section_title)
-                )
-
-                ProSwitchRow(
-                    title = stringResource(R.string.feedback_vibration_title),
-                    subtitle = stringResource(R.string.feedback_vibration_desc),
-                    checked = state.enableVibration,
-                    onCheckedChange = onVibration
-                )
-
-                ProSwitchRow(
-                    title = stringResource(R.string.feedback_sound_title),
-                    subtitle = stringResource(R.string.feedback_sound_desc),
-                    checked = state.enableSound,
-                    onCheckedChange = onSound
-                )
-            }
-
             // --- Battery / Background ---
             AppCard(modifier = Modifier.fillMaxWidth()) {
                 SectionHeader(
-                    icon = Icons.Filled.BatterySaver,
+                    icon = Icons.Default.BatterySaver,
                     title = stringResource(R.string.battery_saver)
                 )
 
@@ -206,10 +324,10 @@ fun SettingsScreen(
                 }
             }
 
-            // --- Map section (اختیاری – UI ساده برای الان) ---
+            // --- Map section ---
             AppCard(modifier = Modifier.fillMaxWidth()) {
                 SectionHeader(
-                    icon = Icons.Filled.GpsFixed,
+                    icon = Icons.Default.Map,
                     title = stringResource(R.string.map_section_title)
                 )
 
@@ -220,13 +338,12 @@ fun SettingsScreen(
                     onCheckedChange = onShowIranCities
                 )
 
-                // فعلاً ساده: 1 = Normal, 2 = Satellite, 3 = Terrain (مثلاً)
                 ProIntSliderRow(
                     title = stringResource(R.string.map_type_title),
                     subtitle = stringResource(R.string.map_type_desc),
                     value = state.mapType,
-                    range = 1..3,
-                    valueText = state.mapType.toString(),
+                    range = 1..4,
+                    valueText = mapTypeLabel(state.mapType),
                     onValueChange = onMapType
                 )
             }
@@ -237,6 +354,28 @@ fun SettingsScreen(
 }
 
 /* ---------- UI pieces ---------- */
+
+@Composable
+private fun hapticStrengthLabel(strength: Int): String = when (strength) {
+    1 -> stringResource(R.string.haptic_strength_low)
+    3 -> stringResource(R.string.haptic_strength_high)
+    else -> stringResource(R.string.haptic_strength_medium)
+}
+
+@Composable
+private fun hapticPatternLabel(pattern: Int): String = when (pattern) {
+    2 -> stringResource(R.string.haptic_pattern_double)
+    3 -> stringResource(R.string.haptic_pattern_long)
+    else -> stringResource(R.string.haptic_pattern_short)
+}
+
+@Composable
+private fun mapTypeLabel(mapType: Int): String = when (mapType) {
+    2 -> stringResource(R.string.map_type_satellite)
+    3 -> stringResource(R.string.map_type_terrain)
+    4 -> stringResource(R.string.map_type_hybrid)
+    else -> stringResource(R.string.map_type_normal)
+}
 
 @Composable
 private fun SectionHeader(
@@ -351,11 +490,13 @@ fun ProIntSliderRow(
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
-                    subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if (subtitle.isNotEmpty()) {
+                    Text(
+                        subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             Text(
                 valueText,

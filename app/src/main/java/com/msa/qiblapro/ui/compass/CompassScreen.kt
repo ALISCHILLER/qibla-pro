@@ -1,7 +1,15 @@
 package com.msa.qiblapro.ui.compass
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +19,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -29,7 +45,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -48,9 +69,10 @@ import com.msa.qiblapro.util.haptics.Haptics
 import com.msa.qiblapro.util.haptics.SoundFx
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.min
 
 @Composable
-fun CompassScreen(vm: QiblaViewModel) {
+fun CompassScreen(vm: QiblaViewModel, onNavigateToMap: () -> Unit = {}) {
     val state by vm.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -64,7 +86,7 @@ fun CompassScreen(vm: QiblaViewModel) {
     LaunchedEffect(Unit) {
         vm.events.collect { ev ->
             when (ev) {
-                AppEvent.Vibrate -> Haptics.vibrate(context, 35)
+                is AppEvent.VibratePattern -> Haptics.vibrate(context, ev.strength, ev.pattern)
                 AppEvent.Beep -> soundFx.beep()
                 is AppEvent.Snack -> snackbarHostState.showSnackbar(ev.msg)
             }
@@ -125,6 +147,10 @@ fun CompassScreen(vm: QiblaViewModel) {
         onEnabled = vm::hideGpsDialog
     )
 
+    if (state.showCalibrationGuide) {
+        CalibrationGuideSheet(onDismiss = { vm.dismissCalibrationGuide() })
+    }
+
     val currentLangCode = LanguageHelper.getCurrentLanguage(context)
     val currentFlag = LanguageHelper.getFlagEmoji(currentLangCode)
 
@@ -135,71 +161,235 @@ fun CompassScreen(vm: QiblaViewModel) {
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = Color.Transparent
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Spacer(Modifier.height(6.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+        Box(Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = "$languageLabel: ",
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 14.sp
-                )
-                Text(text = currentFlag, fontSize = 18.sp)
-            }
+                Spacer(Modifier.height(6.dp))
 
-            if (state.needsCalibration) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "$languageLabel: ",
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 14.sp
+                    )
+                    Text(text = currentFlag, fontSize = 18.sp)
+                }
+
+                if (state.isSensorAvailable && state.needsCalibration) {
+                    AppCard(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(14.dp)) {
+                            Text(stringResource(R.string.calibration_title), style = MaterialTheme.typography.titleMedium)
+                            Spacer(Modifier.height(6.dp))
+                            Text(stringResource(R.string.calibration_hint), style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+
+                FacingGlowPill(
+                    text = if (state.facingQibla) {
+                        stringResource(R.string.facing_qibla)
+                    } else {
+                        stringResource(R.string.rotate_to_qibla, abs(state.rotationToQibla ?: 0f).toInt())
+                    },
+                    isFacing = state.facingQibla && state.isSensorAvailable,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .fillMaxWidth(0.92f)
+                )
+
+                AppCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CompassRose(
+                            modifier = Modifier.fillMaxSize(0.95f),
+                            headingDeg = if (state.isSensorAvailable) animatedHeading else 0f,
+                            qiblaDeg = state.qiblaDeg,
+                            isFacingQibla = state.facingQibla && state.isSensorAvailable,
+                            onRefresh = vm::refreshSensors
+                        )
+                    }
+                }
+
                 AppCard(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(14.dp)) {
-                        Text(stringResource(R.string.calibration_title), style = MaterialTheme.typography.titleMedium)
-                        Spacer(Modifier.height(6.dp))
-                        Text(stringResource(R.string.calibration_hint), style = MaterialTheme.typography.bodyMedium)
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        InfoRow(stringResource(R.string.qibla_direction), "${state.qiblaDeg.toInt()}°")
+                        InfoRow(stringResource(R.string.distance_to_kaaba), String.format("%.1f km", state.distanceKm))
+                        InfoRow(stringResource(R.string.accuracy), state.accuracyM?.let { "${it.toInt()} m" } ?: "—")
                     }
                 }
             }
 
-            FacingGlowPill(
-                text = if (state.facingQibla) {
-                    stringResource(R.string.facing_qibla)
-                } else {
-                    stringResource(R.string.rotate_to_qibla, abs(state.rotationToQibla ?: 0f).toInt())
-                },
-                isFacing = state.facingQibla,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .fillMaxWidth(0.92f)
+            if (!state.isSensorAvailable) {
+                NoCompassOverlay(
+                    onTryAgain = { vm.restartCompass() },
+                    onUseMap = onNavigateToMap
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CalibrationGuideSheet(onDismiss: () -> Unit) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        dragHandle = { BottomSheetDefaults.DragHandle() },
+        containerColor = MaterialTheme.colorScheme.surface
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(R.string.calibration_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = stringResource(R.string.calibration_hint),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            AppCard(
+            InfinityCalibrationAnimation(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CompassRose(
-                        modifier = Modifier.fillMaxSize(0.95f),
-                        headingDeg = animatedHeading,
-                        qiblaDeg = state.qiblaDeg,
-                        isFacingQibla = state.facingQibla,
-                        onRefresh = vm::refreshSensors
-                    )
-                }
-            }
+                    .height(200.dp)
+            )
 
-            AppCard(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    InfoRow(stringResource(R.string.qibla_direction), "${state.qiblaDeg.toInt()}°")
-                    InfoRow(stringResource(R.string.distance_to_kaaba), String.format("%.1f km", state.distanceKm))
-                    InfoRow(stringResource(R.string.accuracy), state.accuracyM?.let { "${it.toInt()} m" } ?: "—")
+            Button(
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(stringResource(R.string.ok))
+            }
+        }
+    }
+}
+
+@Composable
+private fun InfinityCalibrationAnimation(modifier: Modifier = Modifier) {
+    val transition = rememberInfiniteTransition(label = "infinity")
+    val t by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "t"
+    )
+
+    val dotColor = MaterialTheme.colorScheme.primary
+    val pathColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)
+
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val cx = w / 2f
+        val cy = h / 2f
+
+        val a = min(w, h) * 0.4f
+
+        fun point(u: Float): Offset {
+            val su = kotlin.math.sin(u)
+            val cu = kotlin.math.cos(u)
+            val denom = 1f + su * su
+            val x = a * cu / denom
+            val y = a * su * cu / denom
+            return Offset(cx + x, cy + y)
+        }
+
+        val path = Path()
+        val steps = 100
+        for (i in 0..steps) {
+            val u = (i / steps.toFloat()) * (Math.PI * 2).toFloat()
+            val p = point(u)
+            if (i == 0) path.moveTo(p.x, p.y) else path.lineTo(p.x, p.y)
+        }
+
+        drawPath(
+            path = path,
+            color = pathColor,
+            style = Stroke(width = 8f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+        )
+
+        val uDot = t * (Math.PI * 2).toFloat()
+        val pDot = point(uDot)
+        drawCircle(
+            color = dotColor,
+            radius = 12f,
+            center = pDot
+        )
+    }
+}
+
+@Composable
+private fun NoCompassOverlay(
+    onTryAgain: () -> Unit,
+    onUseMap: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.7f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier
+                .padding(24.dp)
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.sensor_not_found_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Text(
+                    text = stringResource(R.string.sensor_not_found_msg),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedButton(
+                        onClick = onUseMap,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = stringResource(R.string.tab_map))
+                    }
+                    Button(
+                        onClick = onTryAgain,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text(text = stringResource(R.string.later)) // Using 'later' as placeholder for Try Again
+                    }
                 }
             }
         }

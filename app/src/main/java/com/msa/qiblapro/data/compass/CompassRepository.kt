@@ -92,6 +92,19 @@ class CompassRepository(
         if (rotationVector != null) {
             sensorManager.registerListener(listener, rotationVector, sensorDelay)
         } else {
+            // ✅ اگر Rotation Vector نداریم، باید هم acc و هم mag موجود باشند
+            if (accelerometer == null || magnetometer == null) {
+                if (BuildConfig.DEBUG) {
+                    Log.w(
+                        "CompassRepository",
+                        "No usable compass sensors. acc=${accelerometer != null} mag=${magnetometer != null}"
+                    )
+                }
+                // با cause می‌بندیم تا upstream catch در ViewModel فعال شود
+                close(IllegalStateException("No usable compass sensors (need accelerometer + magnetometer or rotation vector)."))
+                return@callbackFlow
+            }
+
             sensorManager.registerListener(listener, accelerometer, sensorDelay)
             sensorManager.registerListener(listener, magnetometer, sensorDelay)
         }

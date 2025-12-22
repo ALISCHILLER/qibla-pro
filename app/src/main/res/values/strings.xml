@@ -49,6 +49,8 @@
     <string name="rotate_to_qibla">Rotate %1$d° to face Qibla</string>
     <string name="calibration_title">Calibration needed</string>
     <string name="calibration_hint">Wave your phone in a Figure-8 pattern to calibrate sensors</string>
+    <string name="sensor_not_found_title">Sensor not found</string>
+    <string name="sensor_not_found_msg">This device lacks a magnetic sensor or rotation vector. You can still use the map to find Qibla.</string>
 
     <!-- Info labels -->
     <string name="qibla_direction">Qibla angle</string>
@@ -90,6 +92,15 @@
     <string name="feedback_section_title">Feedback</string>
     <string name="feedback_vibration_title">Vibration</string>
     <string name="feedback_vibration_desc">Vibrate gently when you face Qibla</string>
+    <string name="haptic_strength_title">Vibration intensity</string>
+    <string name="haptic_pattern_title">Vibration pattern</string>
+    <string name="haptic_strength_low">Low</string>
+    <string name="haptic_strength_medium">Medium</string>
+    <string name="haptic_strength_high">High</string>
+    <string name="haptic_pattern_short">Short tap</string>
+    <string name="haptic_pattern_double">Double tap</string>
+    <string name="haptic_pattern_long">Long pulse</string>
+
     <string name="feedback_sound_title">Sound</string>
     <string name="feedback_sound_desc">Play a subtle sound when aligned with Qibla</string>
 
@@ -112,7 +123,12 @@
     <string name="neon_map_style_desc">Cyberpunk night style for the map</string>
 
     <string name="map_type_title">Map type</string>
-    <string name="map_type_desc">1: Normal, 2: Satellite, 3: Terrain, 4: Hybrid</string>
+    <string name="map_type_desc">Choose how the map is displayed</string>
+
+    <string name="map_type_normal">Normal</string>
+    <string name="map_type_satellite">Satellite</string>
+    <string name="map_type_terrain">Terrain</string>
+    <string name="map_type_hybrid">Hybrid</string>
 
     <string name="map_permission_title">No location permission</string>
     <string name="map_permission_body">Map needs location access to show your position and the route to Kaaba.</string>
@@ -123,4 +139,18 @@
     <string name="map_fit">Fit path</string>
     <string name="kaaba_title">Holy Kaaba</string>
     <string name="qibla_title">Qibla Direction</string>
+
+    <string name="search_city_hint">Search city or province…</string>
+
+    <!-- Settings: Appearance -->
+    <string name="appearance_section_title">Appearance</string>
+    <string name="theme_mode_title">Theme mode</string>
+    <string name="theme_mode_system">System</string>
+    <string name="theme_mode_light">Light</string>
+    <string name="theme_mode_dark">Dark</string>
+    <string name="accent_color_title">Accent color</string>
+    <string name="accent_green">Neon Green</string>
+    <string name="accent_blue">Neon Blue</string>
+    <string name="accent_purple">Neon Purple</string>
+    <string name="accent_pink">Neon Pink</string>
 </resources>

@@ -109,4 +109,9 @@
 
     <string name="map_type_title">نوع نقشه</string>
     <string name="map_type_desc">انتخاب بین نمای عادی، ماهواره‌ای یا توپوگرافی</string>
+
+    <string name="map_type_normal">عادی</string>
+    <string name="map_type_satellite">ماهواره‌ای</string>
+    <string name="map_type_terrain">توپوگرافی</string>
+    <string name="map_type_hybrid">ترکیبی</string>
 </resources>

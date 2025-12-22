@@ -69,7 +69,7 @@ fun AppNavGraph() {
                 vm = vm,
                 onNavigateToPermission = {
                     rootNav.navigate(Routes.PERMISSION) {
-                        popUpTo(Routes.MAIN) { inclusive = true }
+                        popUpTo(Routes.MAIN) { inclusive = true } inclusive = true }
                     }
                 }
             )
@@ -147,7 +147,20 @@ private fun MainScaffold(
                 startDestination = Routes.COMPASS,
                 modifier = Modifier.padding(padding)
             ) {
-                composable(Routes.COMPASS) { CompassScreen(vm = vm) }
+                composable(Routes.COMPASS) {
+                    CompassScreen(
+                        vm = vm,
+                        onNavigateToMap = {
+                            tabNav.navigate(Routes.MAP) {
+                                popUpTo(tabNav.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
+                }
                 composable(Routes.MAP) { MapScreen(vm = vm) }
                 composable(Routes.SETTINGS) { SettingsRoute() }
             }
