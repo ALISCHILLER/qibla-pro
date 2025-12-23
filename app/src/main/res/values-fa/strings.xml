@@ -7,6 +7,7 @@
     <string name="cancel">لغو</string>
     <string name="save">ذخیره</string>
     <string name="loading">در حال بارگذاری…</string>
+    <string name="try_again">تلاش دوباره</string>
 
     <!-- Bottom tabs -->
     <string name="tab_compass">قبله‌نما</string>
@@ -15,6 +16,9 @@
 
     <!-- Language -->
     <string name="language_label">زبان</string>
+    <string name="language_en">انگلیسی</string>
+    <string name="language_fa">فارسی</string>
+    <string name="language_ar">عربی</string>
 
     <!-- Permission -->
     <string name="permission_title">دسترسی به موقعیت</string>
@@ -47,6 +51,10 @@
     <!-- Compass -->
     <string name="facing_qibla">روی قبله هستید ✅</string>
     <string name="rotate_to_qibla">برای قبله %1$d° بچرخید</string>
+    <string name="calibration_title">نیاز به کالیبراسیون</string>
+    <string name="calibration_hint">گوشی را با حرکت ۸ انگلیسی (∞) در هوا بچرخانید تا قطب‌نما دقیق‌تر شود</string>
+    <string name="sensor_not_found_title">سنسور یافت نشد</string>
+    <string name="sensor_not_found_msg">دستگاه شما فاقد سنسور مغناطیسی یا چرخش‌نما است. همچنان می‌توانید از نقشه برای قبله استفاده کنید.</string>
 
     <!-- Info labels -->
     <string name="qibla_direction">زاویه قبله</string>
@@ -88,6 +96,18 @@
     <string name="feedback_section_title">بازخورد</string>
     <string name="feedback_vibration_title">لرزش</string>
     <string name="feedback_vibration_desc">هنگام قرار گرفتن روی قبله یک لرزش کوتاه پخش شود</string>
+    <string name="haptic_strength_title">شدت لرزش</string>
+    <string name="haptic_pattern_title">الگوی لرزش</string>
+    <string name="haptic_strength_low">کم</string>
+    <string name="haptic_strength_medium">متوسط</string>
+    <string name="haptic_strength_high">زیاد</string>
+    <string name="haptic_pattern_short">ضربه کوتاه</string>
+    <string name="haptic_pattern_double">ضربه دوتایی</string>
+    <string name="haptic_pattern_long">پالس طولانی</string>
+    
+    <string name="haptic_cooldown_title">بازه زمانی لرزش</string>
+    <string name="haptic_cooldown_desc">تأخیر بین لرزش‌های متوالی</string>
+
     <string name="feedback_sound_title">صدا</string>
     <string name="feedback_sound_desc">هنگام هم‌ترازی با قبله یک صدای ملایم پخش شود</string>
 
@@ -106,6 +126,8 @@
     <string name="map_section_title">نقشه</string>
     <string name="show_iran_cities_title">نمایش شهرهای ایران</string>
     <string name="show_iran_cities_desc">شهرهای مهم ایران را روی نقشه برجسته می‌کند</string>
+    <string name="neon_map_style_title">استایل نئون</string>
+    <string name="neon_map_style_desc">تم شب سایبرپانک برای نقشه</string>
 
     <string name="map_type_title">نوع نقشه</string>
     <string name="map_type_desc">انتخاب بین نمای عادی، ماهواره‌ای یا توپوگرافی</string>
@@ -114,4 +136,59 @@
     <string name="map_type_satellite">ماهواره‌ای</string>
     <string name="map_type_terrain">توپوگرافی</string>
     <string name="map_type_hybrid">ترکیبی</string>
+
+    <string name="map_permission_title">عدم دسترسی به موقعیت</string>
+    <string name="map_permission_body">نقشه برای نمایش مکان شما و مسیر تا کعبه به دسترسی نیاز دارد.</string>
+    <string name="map_waiting_title">در انتظار موقعیت…</string>
+    <string name="map_waiting_body">در حال دریافت مکان شما برای رسم مسیر قبله.</string>
+    <string name="map_gps_off_title">GPS خاموش است</string>
+    <string name="map_gps_off_body">لطفاً برای مشاهده مکان خود روی نقشه، GPS را روشن کنید.</string>
+    <string name="map_fit">تنظیم نما</string>
+    <string name="kaaba_title">کعبه مشرفه</string>
+    <string name="qibla_title">جهت قبله</string>
+
+    <string name="search_city_hint">جستجوی شهر یا استان…</string>
+
+    <!-- Settings: Appearance -->
+    <string name="appearance_section_title">ظاهر</string>
+    <string name="theme_mode_title">حالت تم</string>
+    <string name="theme_mode_system">پیش‌فرض سیستم</string>
+    <string name="theme_mode_light">روشن</string>
+    <string name="theme_mode_dark">تیره</string>
+    <string name="accent_color_title">رنگ شاخص</string>
+    <string name="accent_green">سبز نئونی</string>
+    <string name="accent_blue">آبی نئونی</string>
+    <string name="accent_purple">بنفش نئونی</string>
+    <string name="accent_pink">صورتی نئونی</string>
+
+    <!-- Onboarding -->
+    <string name="onb_title">شروع کار</string>
+    <string name="onb_skip">رد کردن</string>
+    <string name="onb_back">قبلی</string>
+    <string name="onb_next">بعدی</string>
+    <string name="onb_start">شروع</string>
+
+    <string name="onb_title_location">فعال‌سازی موقعیت</string>
+    <string name="onb_body_location">برای دقت بیشتر، GPS را روشن کرده و مجوز دسترسی را صادر کنید.</string>
+
+    <string name="onb_title_calibration">کالیبره کردن قطب‌نما</string>
+    <string name="onb_body_calibration">اگر قطب‌نما خطا دارد، گوشی را با حرکت ۸ انگلیسی (∞) در هوا بچرخانید.</string>
+
+    <string name="onb_title_map">استفاده از نقشه</string>
+    <string name="onb_body_map">اگر دستگاه شما سنسور ندارد، از نقشه و قابلیت شهرهای نزدیک استفاده کنید.</string>
+
+    <string name="onb_tip">نکته</string>
+    <string name="onb_tip_location">موقعیت دقیق باعث بهبود نمایش جهت و فاصله می‌شود.</string>
+    <string name="onb_tip_calibration">کالیبراسیون به کاهش تداخل‌های مغناطیسی کمک می‌کند.</string>
+    <string name="onb_tip_map">از قابلیت «نزدیک من» برای انتخاب سریع شهر مرجع استفاده کنید.</string>
+
+    <!-- About -->
+    <string name="about_title">درباره ما</string>
+    <string name="about_version">نسخه %1$s</string>
+    <string name="about_links">لینک‌ها</string>
+    <string name="about_privacy">سیاست حریم خصوصی</string>
+    <string name="about_contact">تماس با پشتیبانی</string>
+
+    <string name="privacy_policy_url">https://example.com/privacy</string>
+    <string name="support_email">support@example.com</string>
 </resources>

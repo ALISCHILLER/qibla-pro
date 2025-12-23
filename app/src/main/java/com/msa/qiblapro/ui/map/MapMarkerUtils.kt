@@ -5,10 +5,14 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 fun bitmapDescriptorFromVector(context: Context, @DrawableRes resId: Int): BitmapDescriptor? {
+    // ⬇️ رفع کرش: اطمینان از آماده بودن موتور نقشه
+    MapsInitializer.initialize(context)
+    
     val drawable = ContextCompat.getDrawable(context, resId) ?: return null
     val bitmap = Bitmap.createBitmap(
         drawable.intrinsicWidth.coerceAtLeast(1),

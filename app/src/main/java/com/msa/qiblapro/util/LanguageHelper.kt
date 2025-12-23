@@ -1,29 +1,44 @@
 package com.msa.qiblapro.util
 
 import android.content.Context
+import android.content.res.Configuration
+import android.os.Build
+import android.os.LocaleList
+import java.util.Locale
 
 object LanguageHelper {
 
-    /** زبان فعلی (fa / ar / en / …) */
     fun getCurrentLanguage(context: Context): String {
         val config = context.resources.configuration
-        val locale = if (config.locales.isEmpty) {
-            @Suppress("DEPRECATION")
-            config.locale
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            config.locales[0].language
         } else {
-            config.locales[0]
+            @Suppress("DEPRECATION")
+            config.locale.language
+        } ?: "en"
+    }
+
+    /** 
+     * اعمال زبان به تنظیمات اپلیکیشن
+     */
+    fun applyLanguage(context: Context, langCode: String) {
+        val locale = Locale(langCode)
+        Locale.setDefault(locale)
+        
+        val resources = context.resources
+        val config = Configuration(resources.configuration)
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            config.setLocales(LocaleList(locale))
+        } else {
+            @Suppress("DEPRECATION")
+            config.locale = locale
         }
-        return locale.language
+        
+        @Suppress("DEPRECATION")
+        resources.updateConfiguration(config, resources.displayMetrics)
     }
 
-    /** زبان fallback منطقی: اگر fa → ar، اگر ar → en، بقیه → en */
-    fun getFallbackLanguage(context: Context): String = when (getCurrentLanguage(context)) {
-        "fa" -> "ar"
-        "ar" -> "en"
-        else -> "en"
-    }
-
-    /** ایموجی پرچم برای هر زبان */
     fun getFlagEmoji(lang: String): String = when (lang) {
         "fa" -> "\uD83C\uDDEE\uD83C\uDDF7" // 🇮🇷
         "ar" -> "\uD83C\uDDF8\uD83C\uDDE6" // 🇸🇦

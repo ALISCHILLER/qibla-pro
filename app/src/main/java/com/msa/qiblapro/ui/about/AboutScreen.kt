@@ -2,7 +2,6 @@ package com.msa.qiblapro.ui.about
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -19,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -34,15 +32,19 @@ fun AboutScreen(onBack: () -> Unit) {
     val context = LocalContext.current
 
     fun openUrl(url: String) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        context.startActivity(intent)
+        runCatching {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            context.startActivity(intent)
+        }
     }
 
     fun sendEmail() {
-        val intent = Intent(Intent.ACTION_SENDTO).apply {
-            data = Uri.parse("mailto:${context.getString(R.string.support_email)}")
+        runCatching {
+            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("mailto:${context.getString(R.string.support_email)}")
+            }
+            context.startActivity(intent)
         }
-        context.startActivity(intent)
     }
 
     ProBackground {
@@ -50,10 +52,14 @@ fun AboutScreen(onBack: () -> Unit) {
             containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.about_title)) },
+                    title = { Text(stringResource(R.string.about_title), color = MaterialTheme.colorScheme.onSurface) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = null)
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack, 
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -79,7 +85,8 @@ fun AboutScreen(onBack: () -> Unit) {
                 Text(
                     text = stringResource(R.string.app_name),
                     style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = stringResource(R.string.about_version, BuildConfig.VERSION_NAME),
@@ -91,13 +98,13 @@ fun AboutScreen(onBack: () -> Unit) {
 
                 // Information Section
                 AppCard(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         AboutRow(
                             icon = Icons.Default.Policy,
                             title = stringResource(R.string.about_privacy),
                             onClick = { openUrl(context.getString(R.string.privacy_policy_url)) }
                         )
-                        HorizontalDivider(color = Color.White.copy(alpha = 0.05f))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
                         AboutRow(
                             icon = Icons.Default.Email,
                             title = stringResource(R.string.about_contact),
@@ -111,7 +118,7 @@ fun AboutScreen(onBack: () -> Unit) {
                 Text(
                     text = "© ${java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)} MSA Qibla Pro",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.White.copy(alpha = 0.4f)
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                 )
             }
         }
@@ -133,6 +140,10 @@ private fun AboutRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-        Text(text = title, style = MaterialTheme.typography.bodyLarge)
+        Text(
+            text = title, 
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }

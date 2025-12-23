@@ -16,6 +16,9 @@
 
     <!-- Language -->
     <string name="language_label">Language</string>
+    <string name="language_en">English</string>
+    <string name="language_fa">Persian</string>
+    <string name="language_ar">Arabic</string>
 
     <!-- Permission -->
     <string name="permission_title">Location access</string>

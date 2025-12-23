@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -41,6 +42,7 @@ class SettingsRepository(private val ctx: Context) {
         val THEME_MODE = intPreferencesKey("theme_mode")
         val ACCENT_TYPE = intPreferencesKey("accent_type")
         val HAS_SEEN_ONBOARDING = booleanPreferencesKey("has_seen_onboarding")
+        val LANGUAGE_CODE = stringPreferencesKey("language_code")
     }
 
     val settingsFlow: Flow<AppSettings> = ctx.ds.data.map { p ->
@@ -64,7 +66,8 @@ class SettingsRepository(private val ctx: Context) {
             neonMapStyle = p[Keys.NEON_MAP_STYLE] ?: true,
             themeMode = ThemeMode.entries.getOrElse(p[Keys.THEME_MODE] ?: 2) { ThemeMode.DARK },
             accent = NeonAccent.entries.getOrElse(p[Keys.ACCENT_TYPE] ?: 0) { NeonAccent.GREEN },
-            hasSeenOnboarding = p[Keys.HAS_SEEN_ONBOARDING] ?: false
+            hasSeenOnboarding = p[Keys.HAS_SEEN_ONBOARDING] ?: false,
+            languageCode = p[Keys.LANGUAGE_CODE] ?: "en"
         )
     }
 
@@ -94,4 +97,5 @@ class SettingsRepository(private val ctx: Context) {
     suspend fun setThemeMode(mode: ThemeMode) = ctx.ds.edit { it[Keys.THEME_MODE] = mode.ordinal }
     suspend fun setAccent(accent: NeonAccent) = ctx.ds.edit { it[Keys.ACCENT_TYPE] = accent.ordinal }
     suspend fun setHasSeenOnboarding(v: Boolean) = ctx.ds.edit { it[Keys.HAS_SEEN_ONBOARDING] = v }
+    suspend fun setLanguageCode(v: String) = ctx.ds.edit { it[Keys.LANGUAGE_CODE] = v }
 }

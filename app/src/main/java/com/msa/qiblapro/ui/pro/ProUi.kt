@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,7 +19,7 @@ import androidx.compose.ui.unit.dp
 private val AppCardShape = RoundedCornerShape(18.dp)
 
 /* -------------------------------------------------------------------------- */
-/*  Background (FLAT – NO GRADIENT – NO GLOW)                                  */
+/*  Background                                                                 */
 /* -------------------------------------------------------------------------- */
 
 @Composable
@@ -29,15 +30,14 @@ fun ProBackground(
     Box(
         modifier = modifier
             .fillMaxSize()
-            // ⬇️ رنگ کاملاً مات، بدون گرادینت
-            .background(Color(0xFF07121E))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         content()
     }
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Flat Shadow (Material Default)                                             */
+/*  Shadow                                                                     */
 /* -------------------------------------------------------------------------- */
 
 fun Modifier.appShadow(
@@ -45,7 +45,7 @@ fun Modifier.appShadow(
 ): Modifier = this
 
 /* -------------------------------------------------------------------------- */
-/*  Flat Card (NO GLASS – NO BLUR – NO ALPHA)                                  */
+/*  Card                                                                       */
 /* -------------------------------------------------------------------------- */
 
 @Composable
@@ -58,11 +58,10 @@ fun AppCard(
         modifier = modifier,
         shape = AppCardShape,
         colors = CardDefaults.cardColors(
-            // ⬇️ کاملاً مات
-            containerColor = Color(0xFF0E2236)
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 6.dp
+            defaultElevation = 2.dp
         )
     ) {
         Column(

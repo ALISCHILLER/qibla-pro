@@ -26,6 +26,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationCity
 import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -294,9 +296,10 @@ fun MapScreen(vm: QiblaViewModel) {
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp),
-                containerColor = Color.Black.copy(alpha = 0.55f)
+                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                contentColor = MaterialTheme.colorScheme.onSurface
             ) {
-                Text(stringResource(R.string.map_fit), color = Color.White)
+                Text(stringResource(R.string.map_fit))
             }
         }
     }
@@ -312,17 +315,23 @@ private fun MapSearchBar(
     onCityClick: (IranCity) -> Unit,
     isLocationAvailable: Boolean
 ) {
+    val shape = RoundedCornerShape(24.dp)
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.75f), shape)
             .padding(horizontal = 4.dp)
     ) {
         TextField(
             value = query,
             onValueChange = onQueryChange,
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(stringResource(R.string.search_city_hint), color = Color.White.copy(0.6f)) },
+            placeholder = { 
+                Text(
+                    text = stringResource(R.string.search_city_hint), 
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)
+                ) 
+            },
             leadingIcon = {
                 IconButton(
                     onClick = onNearbyToggle,
@@ -331,7 +340,7 @@ private fun MapSearchBar(
                     Icon(
                         Icons.Default.NearMe,
                         null,
-                        tint = if (isNearbyActive) MaterialTheme.colorScheme.primary else Color.White
+                        tint = if (isNearbyActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
                     )
                 }
             },
@@ -341,10 +350,19 @@ private fun MapSearchBar(
                         onQueryChange("")
                         if (isNearbyActive) onNearbyToggle()
                     }) {
-                        Icon(Icons.Default.Close, null, tint = Color.White)
+                        Icon(
+                            Icons.Default.Close, 
+                            null, 
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
+                        )
                     }
                 } else {
-                    Icon(Icons.Default.Search, null, tint = Color.White.copy(0.7f), modifier = Modifier.padding(end = 8.dp))
+                    Icon(
+                        Icons.Default.Search, 
+                        null, 
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f), 
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
                 }
             },
             colors = TextFieldDefaults.colors(
@@ -352,9 +370,9 @@ private fun MapSearchBar(
                 unfocusedContainerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = Color.White,
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
             ),
             singleLine = true
         )
@@ -414,7 +432,7 @@ private fun MapTypeChips(
 
     Surface(
         modifier = modifier,
-        color = Color.Black.copy(alpha = 0.45f),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
         shape = MaterialTheme.shapes.extraLarge
     ) {
         LazyRow(
@@ -425,12 +443,12 @@ private fun MapTypeChips(
                 FilterChip(
                     selected = selected == id,
                     onClick = { onSelect(id) },
-                    label = { Text(title, color = Color.White) },
+                    label = { Text(title) },
                     colors = FilterChipDefaults.filterChipColors(
                         containerColor = Color.White.copy(alpha = 0.08f),
                         selectedContainerColor = Color.White.copy(alpha = 0.20f),
-                        labelColor = Color.White,
-                        selectedLabelColor = Color.White
+                        labelColor = MaterialTheme.colorScheme.onSurface,
+                        selectedLabelColor = MaterialTheme.colorScheme.onSurface
                     )
                 )
             }

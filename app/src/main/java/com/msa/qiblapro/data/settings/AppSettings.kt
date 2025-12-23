@@ -23,5 +23,6 @@ data class AppSettings(
     val neonMapStyle: Boolean = true,
     val themeMode: ThemeMode = ThemeMode.DARK,
     val accent: NeonAccent = NeonAccent.GREEN,
-    val hasSeenOnboarding: Boolean = false
+    val hasSeenOnboarding: Boolean = false,
+    val languageCode: String = "en"
 )
