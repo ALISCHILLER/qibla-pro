@@ -3,12 +3,10 @@ package com.msa.qiblapro.ui.permissions
 import android.Manifest
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
-import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.msa.qiblapro.util.Intents
 
 fun isLocationPermissionGranted(context: Context): Boolean {
     val fine = ContextCompat.checkSelfPermission(
@@ -29,14 +27,12 @@ fun isLocationPermissionPermanentlyDenied(activity: Activity): Boolean {
     val coarseRationale = ActivityCompat.shouldShowRequestPermissionRationale(
         activity, Manifest.permission.ACCESS_COARSE_LOCATION
     )
-    // اگر هیچ‌کدوم rationale نشان داده نشه و هنوز مجوز نداریم => احتمالا "Don't ask again"
     return !(fineRationale || coarseRationale)
 }
 
+/** 
+ * باز کردن تنظیمات اپلیکیشن (از Intents.kt استفاده می‌کند)
+ */
 fun openAppSettings(context: Context) {
-    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-        data = Uri.parse("package:${context.packageName}")
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    }
-    context.startActivity(intent)
+    Intents.openAppSettings(context)
 }

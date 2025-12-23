@@ -19,6 +19,7 @@ data class QiblaUiState(
 
     val needsCalibration: Boolean = false,
     val showCalibrationGuide: Boolean = false,
+    val showCalibrationSheet: Boolean = false, // فیلد جدید برای مدیریت دیالوگ
     val isSensorAvailable: Boolean = true,
 
     val gpsEnabled: Boolean = true,
@@ -31,6 +32,7 @@ data class QiblaUiState(
     val enableVibration: Boolean = true,
     val hapticStrength: Int = 2,
     val hapticPattern: Int = 1,
+    val hapticCooldownMs: Long = 1500,
     val enableSound: Boolean = true,
     val mapType: Int = 1,
     val showIranCities: Boolean = true,
@@ -42,4 +44,9 @@ data class QiblaUiState(
     val useLowPowerLocation: Boolean = true,
     val autoCalibration: Boolean = true,
     val calibrationThreshold: Int = 3,
-)
+    val hasSeenOnboarding: Boolean = false,
+    val languageCode: String = "en"
+) {
+    val accuracyLabel: String
+        get() = accuracyM?.let { "${it.toInt()} m" } ?: "—"
+}
