@@ -2,6 +2,7 @@ package com.msa.qiblapro.ui.compass.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -16,7 +17,7 @@ import com.msa.qiblapro.ui.pro.ProBackground
 @Composable
 fun CompassScaffold(
     snackbarHostState: SnackbarHostState,
-    content: @Composable () -> Unit
+    content: @Composable ColumnScope.() -> Unit
 ) {
     ProBackground {
         Scaffold(
@@ -28,10 +29,9 @@ fun CompassScaffold(
                     .fillMaxSize()
                     .padding(padding)
                     .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                content()
-            }
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                content = content
+            )
         }
     }
 }

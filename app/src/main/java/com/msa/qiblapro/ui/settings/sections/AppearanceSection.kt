@@ -3,11 +3,19 @@ package com.msa.qiblapro.ui.settings.sections
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material3.*
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,26 +26,33 @@ import androidx.compose.ui.unit.dp
 import com.msa.qiblapro.R
 import com.msa.qiblapro.data.settings.NeonAccent
 import com.msa.qiblapro.data.settings.ThemeMode
-import com.msa.qiblapro.ui.settings.SectionHeader
-import com.msa.qiblapro.ui.settings.SettingCard
+import com.msa.qiblapro.ui.pro.AppCard
+import com.msa.qiblapro.ui.settings.SettingsAction
 import com.msa.qiblapro.ui.settings.SettingsUiState
+import com.msa.qiblapro.ui.settings.components.SectionHeader
 import com.msa.qiblapro.util.haptics.Haptics
 
 @Composable
 fun AppearanceSection(
     state: SettingsUiState,
-    onThemeMode: (ThemeMode) -> Unit,
-    onAccent: (NeonAccent) -> Unit
+    onAction: (SettingsAction) -> Unit
 ) {
     val context = LocalContext.current
 
-    SectionHeader(stringResource(R.string.appearance_section_title))
+    AppCard(modifier = Modifier.fillMaxWidth()) {
+        SectionHeader(
+            icon = Icons.Filled.Palette,
+            title = stringResource(R.string.appearance_section_title)
+        )
 
-    SettingCard {
         Text(
             text = stringResource(R.string.theme_mode_title),
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface
         )
+
+        Spacer(Modifier.height(8.dp))
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -50,19 +65,23 @@ fun AppearanceSection(
                 }
                 FilterChip(
                     selected = state.themeMode == mode,
-                    onClick = { onThemeMode(mode) },
+                    onClick = { onAction(SettingsAction.SetThemeMode(mode)) },
                     label = { Text(label) },
                     modifier = Modifier.weight(1f)
                 )
             }
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(14.dp))
 
         Text(
             text = stringResource(R.string.accent_color_title),
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface
         )
+
+        Spacer(Modifier.height(10.dp))
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -74,6 +93,7 @@ fun AppearanceSection(
                     NeonAccent.PURPLE -> Color(0xFFBD00FF)
                     NeonAccent.PINK -> Color(0xFFFF00E5)
                 }
+
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -85,8 +105,11 @@ fun AppearanceSection(
                             shape = CircleShape
                         )
                         .clickable {
-                            onAccent(accent)
-                            Haptics.vibrate(context, state.hapticStrength, state.hapticPattern)
+                            onAction(SettingsAction.SetAccent(accent))
+                            // هپتیک تستی (اختیاری)
+                            if (state.enableVibration) {
+                                Haptics.vibrate(context, state.hapticStrength, state.hapticPattern)
+                            }
                         }
                 )
             }

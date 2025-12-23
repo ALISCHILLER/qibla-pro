@@ -1,31 +1,35 @@
 package com.msa.qiblapro.ui.compass
 
+import com.msa.qiblapro.data.settings.NeonAccent
+import com.msa.qiblapro.data.settings.ThemeMode
+
 data class QiblaUiState(
     val hasLocationPermission: Boolean = false,
     val hasLocation: Boolean = false,
 
-    val lat: Double? = null,
-    val lon: Double? = null,
-    val accuracyM: Float? = null,
+    val userLat: Double? = null,
+    val userLon: Double? = null,
+    val locationAccuracyM: Float? = null,
 
-    val headingMagDeg: Float = 0f,
+    val headingDeg: Float = 0f,
     val headingTrue: Float? = null,
 
-    val qiblaDeg: Float = 0f,
+    val qiblaBearingDeg: Float = 0f,
     val distanceKm: Double = 0.0,
+    val declinationDeg: Float = 0f,
 
-    val rotationToQibla: Float? = null,
-    val facingQibla: Boolean = false,
+    val rotationErrorDeg: Float = 0f,
+    val isFacingQibla: Boolean = false,
 
     val needsCalibration: Boolean = false,
     val showCalibrationGuide: Boolean = false,
-    val showCalibrationSheet: Boolean = false, // فیلد جدید برای مدیریت دیالوگ
+    val showCalibrationSheet: Boolean = false,
     val isSensorAvailable: Boolean = true,
 
     val gpsEnabled: Boolean = true,
     val showGpsDialog: Boolean = false,
 
-    // Settings
+    // Settings Mirror
     val useTrueNorth: Boolean = true,
     val smoothing: Float = 0.65f,
     val alignTolerance: Int = 6,
@@ -37,16 +41,15 @@ data class QiblaUiState(
     val mapType: Int = 1,
     val showIranCities: Boolean = true,
     val neonMapStyle: Boolean = true,
-
-    val showGpsPrompt: Boolean = true,
-    val batterySaverMode: Boolean = false,
-    val bgUpdateFreqSec: Int = 5,
-    val useLowPowerLocation: Boolean = true,
-    val autoCalibration: Boolean = true,
-    val calibrationThreshold: Int = 3,
-    val hasSeenOnboarding: Boolean = false,
+    val themeMode: ThemeMode = ThemeMode.DARK,
+    val accent: NeonAccent = NeonAccent.GREEN,
     val languageCode: String = "en"
 ) {
     val accuracyLabel: String
-        get() = accuracyM?.let { "${it.toInt()} m" } ?: "—"
+        get() = locationAccuracyM?.let { "${it.toInt()} m" } ?: "—"
+
+    // Aliases for compatibility with existing UI code
+    val qiblaDeg: Float get() = qiblaBearingDeg
+    val lat: Double? get() = userLat
+    val lon: Double? get() = userLon
 }

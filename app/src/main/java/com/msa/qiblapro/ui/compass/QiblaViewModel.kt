@@ -76,8 +76,10 @@ class QiblaViewModel @Inject constructor(
                 
                 _state.update { it.copy(
                     hasLocation = true,
-                    lat = loc.lat, lon = loc.lon, 
-                    qiblaDeg = qibla, declinationDeg = decl,
+                    userLat = loc.lat,
+                    userLon = loc.lon,
+                    qiblaBearingDeg = qibla,
+                    declinationDeg = decl,
                     distanceKm = QiblaMath.distanceKmToKaaba(loc.lat, loc.lon),
                     gpsEnabled = GpsUtils.isLocationEnabled(appCtx)
                 ) }
@@ -98,7 +100,7 @@ class QiblaViewModel @Inject constructor(
                 val s = settingsRepo.settingsFlow.first()
                 val input = QiblaEngineInput(
                     rawHeadingDeg = reading.headingMagneticDeg,
-                    qiblaBearingDeg = _state.value.qiblaDeg,
+                    qiblaBearingDeg = _state.value.qiblaBearingDeg,
                     declinationDeg = _state.value.declinationDeg,
                     useTrueNorth = s.useTrueNorth,
                     smoothingFactor = s.smoothing,
@@ -110,8 +112,8 @@ class QiblaViewModel @Inject constructor(
                 handleHaptics(out.isFacing, s)
                 
                 _state.update { it.copy(
-                    headingMagDeg = out.headingDeg,
-                    facingQibla = out.isFacing,
+                    headingDeg = out.headingDeg,
+                    isFacingQibla = out.isFacing,
                     needsCalibration = out.needsCalibration,
                     showCalibrationGuide = out.needsCalibration && System.currentTimeMillis() >= calibrationGuideDismissedUntilMs
                 ) }
@@ -119,7 +121,7 @@ class QiblaViewModel @Inject constructor(
     }
 
     private fun handleHaptics(isFacingNow: Boolean, s: com.msa.qiblapro.data.settings.AppSettings) {
-        if (isFacingNow && !_state.value.facingQibla) {
+        if (isFacingNow && !_state.value.isFacingQibla) {
             val now = System.currentTimeMillis()
             if (now - lastHapticTimeMs >= s.hapticCooldownMs) {
                 lastHapticTimeMs = now
@@ -137,14 +139,14 @@ class QiblaViewModel @Inject constructor(
                     settingsRepo.setLanguageCode(action.langCode)
                     LanguageHelper.applyLanguage(appCtx, action.langCode)
                 }
-                is SettingsAction.SetUseTrueNorth -> settingsRepo.setUseTrueNorth(action.enabled)
-                is SettingsAction.SetSmoothing -> settingsRepo.setSmoothing(action.factor)
-                is SettingsAction.SetAlignmentTolerance -> settingsRepo.setAlignmentTolerance(action.degrees)
-                is SettingsAction.SetVibration -> settingsRepo.setVibration(action.enabled)
-                is SettingsAction.SetHapticStrength -> settingsRepo.setHapticStrength(action.strength)
-                is SettingsAction.SetHapticPattern -> settingsRepo.setHapticPattern(action.pattern)
-                is SettingsAction.SetHapticCooldown -> settingsRepo.setHapticCooldown(action.ms)
-                is SettingsAction.SetSound -> settingsRepo.setSound(action.enabled)
+                is SettingsAction.SetUseTrueNorth -> settingsRepo.setUseTrueNorth(action.v)
+                is SettingsAction.SetSmoothing -> settingsRepo.setSmoothing(action.v)
+                is SettingsAction.SetAlignmentTol -> settingsRepo.setAlignmentTolerance(action.v)
+                is SettingsAction.SetVibration -> settingsRepo.setVibration(action.v)
+                is SettingsAction.SetHapticStrength -> settingsRepo.setHapticStrength(action.v)
+                is SettingsAction.SetHapticPattern -> settingsRepo.setHapticPattern(action.v)
+                is SettingsAction.SetHapticCooldown -> settingsRepo.setHapticCooldown(action.v)
+                is SettingsAction.SetSound -> settingsRepo.setSound(action.v)
                 is SettingsAction.SetMapType -> settingsRepo.setMapType(action.v)
                 is SettingsAction.SetIranCities -> settingsRepo.setShowIranCities(action.v)
                 else -> {}
@@ -152,6 +154,7 @@ class QiblaViewModel @Inject constructor(
         }
     }
 
+    fun setMapType(v: Int) = onSettingsAction(SettingsAction.SetMapType(v))
     fun setPermissionGranted(v: Boolean) { _permission.value = v }
     fun restartCompass() { engine.reset(); compassRestart.tryEmit(Unit) }
     fun dismissCalibrationGuide() { 

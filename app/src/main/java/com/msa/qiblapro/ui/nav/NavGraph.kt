@@ -23,6 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -187,16 +188,27 @@ private fun MainScaffold(
                         vm = vm,
                         onNavigateToMap = {
                             tabNav.navigate(Routes.MAP) {
-                                popUpTo(tabNav.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
+                                popUpTo(tabNav.graph.findStartDestination().id) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        onNavigateToSettings = {
+                            tabNav.navigate(Routes.SETTINGS) {
+                                popUpTo(tabNav.graph.findStartDestination().id) { saveState = true }
                                 launchSingleTop = true
                                 restoreState = true
                             }
                         }
                     )
                 }
-                composable(Routes.MAP) { MapScreen(vm = vm) }
+                composable(Routes.MAP) {
+                    val st by vm.state.collectAsStateWithLifecycle()
+                    MapScreen(
+                        st = st,
+                        onSetMapType = vm::setMapType
+                    )
+                }
                 composable(Routes.SETTINGS) {
                     SettingsRoute(onNavigateToAbout = onNavigateToAbout)
                 }

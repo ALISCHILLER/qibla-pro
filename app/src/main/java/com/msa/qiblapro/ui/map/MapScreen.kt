@@ -14,20 +14,23 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.*
 import com.msa.qiblapro.R
+import com.msa.qiblapro.ui.compass.QiblaUiState
 import com.msa.qiblapro.util.IranCities
 import com.msa.qiblapro.util.IranCity
 import kotlinx.coroutines.launch
 
 @Composable
 internal fun MapScreen(
-    st: com.msa.qiblapro.ui.compass.QiblaUiState,
+    st: QiblaUiState,
     onSetMapType: (Int) -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     val userLatLng = remember(st.lat, st.lon) {
-        if (st.lat != null && st.lon != null) LatLng(st.lat, st.lon) else null
+        val lat = st.lat
+        val lon = st.lon
+        if (lat != null && lon != null) LatLng(lat, lon) else null
     }
 
     val qiblaIcon = remember { mutableStateOf<BitmapDescriptor?>(null) }

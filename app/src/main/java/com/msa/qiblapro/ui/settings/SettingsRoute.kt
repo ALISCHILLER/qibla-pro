@@ -35,6 +35,7 @@ fun SettingsRoute(
                 is SettingsAction.SetThemeMode -> vm.setThemeMode(action.mode)
                 is SettingsAction.SetAccent -> vm.setAccent(action.accent)
                 SettingsAction.OpenAbout -> onNavigateToAbout()
+                else -> {}
             }
         }
     )
