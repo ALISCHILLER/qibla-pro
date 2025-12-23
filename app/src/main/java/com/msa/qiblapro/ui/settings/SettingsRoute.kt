@@ -39,25 +39,3 @@ fun SettingsRoute(
         }
     )
 }
-
-sealed interface SettingsAction {
-    data class SetUseTrueNorth(val v: Boolean) : SettingsAction
-    data class SetSmoothing(val v: Float) : SettingsAction
-    data class SetAlignmentTol(val v: Int) : SettingsAction
-    data class SetShowGpsPrompt(val v: Boolean) : SettingsAction
-    data class SetBatterySaver(val v: Boolean) : SettingsAction
-    data class SetBgUpdateFreq(val v: Int) : SettingsAction
-    data class SetLowPowerLoc(val v: Boolean) : SettingsAction
-    data class SetAutoCalib(val v: Boolean) : SettingsAction
-    data class SetCalibThreshold(val v: Int) : SettingsAction
-    data class SetVibration(val v: Boolean) : SettingsAction
-    data class SetHapticStrength(val v: Int) : SettingsAction
-    data class SetHapticPattern(val v: Int) : SettingsAction
-    data class SetHapticCooldown(val v: Long) : SettingsAction
-    data class SetSound(val v: Boolean) : SettingsAction
-    data class SetMapType(val v: Int) : SettingsAction
-    data class SetIranCities(val v: Boolean) : SettingsAction
-    data class SetThemeMode(val mode: com.msa.qiblapro.data.settings.ThemeMode) : SettingsAction
-    data class SetAccent(val accent: com.msa.qiblapro.data.settings.NeonAccent) : SettingsAction
-    object OpenAbout : SettingsAction
-}

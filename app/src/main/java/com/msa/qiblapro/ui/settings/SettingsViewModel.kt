@@ -32,7 +32,8 @@ data class SettingsUiState(
     val neonMapStyle: Boolean = true,
     val themeMode: ThemeMode = ThemeMode.DARK,
     val accent: NeonAccent = NeonAccent.GREEN,
-    val hasSeenOnboarding: Boolean = false
+    val hasSeenOnboarding: Boolean = false,
+    val languageCode: String = "en"
 )
 
 @HiltViewModel
@@ -62,7 +63,8 @@ class SettingsViewModel @Inject constructor(
                 neonMapStyle = s.neonMapStyle,
                 themeMode = s.themeMode,
                 accent = s.accent,
-                hasSeenOnboarding = s.hasSeenOnboarding
+                hasSeenOnboarding = s.hasSeenOnboarding,
+                languageCode = s.languageCode
             )
         }
         .stateIn(
@@ -95,4 +97,5 @@ class SettingsViewModel @Inject constructor(
     fun setThemeMode(mode: ThemeMode) = update { setThemeMode(mode) }
     fun setAccent(accent: NeonAccent) = update { setAccent(accent) }
     fun setHasSeenOnboarding(v: Boolean) = update { setHasSeenOnboarding(v) }
+    fun setLanguage(langCode: String) = update { setLanguageCode(langCode) }
 }

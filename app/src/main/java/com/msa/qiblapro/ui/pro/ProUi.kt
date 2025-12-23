@@ -8,19 +8,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-
-/* -------------------------------------------------------------------------- */
-/*  Shapes                                                                     */
-/* -------------------------------------------------------------------------- */
-
-private val AppCardShape = RoundedCornerShape(18.dp)
-
-/* -------------------------------------------------------------------------- */
-/*  Background                                                                 */
-/* -------------------------------------------------------------------------- */
 
 @Composable
 fun ProBackground(
@@ -36,18 +25,6 @@ fun ProBackground(
     }
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Shadow                                                                     */
-/* -------------------------------------------------------------------------- */
-
-fun Modifier.appShadow(
-    elevation: Dp = 6.dp
-): Modifier = this
-
-/* -------------------------------------------------------------------------- */
-/*  Card                                                                       */
-/* -------------------------------------------------------------------------- */
-
 @Composable
 fun AppCard(
     modifier: Modifier = Modifier,
@@ -56,13 +33,11 @@ fun AppCard(
 ) {
     Card(
         modifier = modifier,
-        shape = AppCardShape,
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier.padding(contentPadding),

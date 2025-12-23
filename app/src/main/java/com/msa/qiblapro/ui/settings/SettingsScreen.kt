@@ -29,36 +29,7 @@ import com.msa.qiblapro.ui.pro.AppCard
 import com.msa.qiblapro.ui.pro.ProBackground
 import com.msa.qiblapro.util.haptics.Haptics
 
-@Composable
-fun SettingsRoute(
-    vm: SettingsViewModel = hiltViewModel(),
-    onNavigateToAbout: () -> Unit
-) {
-    val s by vm.state.collectAsState()
 
-    SettingsScreen(
-        state = s,
-        onUseTrueNorth = vm::setUseTrueNorth,
-        onAngleSmoothing = vm::setSmoothing,
-        onAlignmentTolerance = vm::setAlignmentTol,
-        onShowGpsPrompt = vm::setShowGpsPrompt,
-        onBatterySaver = vm::setBatterySaver,
-        onBgUpdateFreqSec = vm::setBgFreqSec,
-        onLowPowerLocation = vm::setLowPowerLoc,
-        onAutoCalibration = vm::setAutoCalib,
-        onCalibrationThreshold = vm::setCalibThreshold,
-        onVibration = vm::setVibration,
-        onHapticStrength = vm::setHapticStrength,
-        onHapticPattern = vm::setHapticPattern,
-        onHapticCooldown = vm::setHapticCooldown,
-        onSound = vm::setSound,
-        onMapType = vm::setMapType,
-        onShowIranCities = vm::setIranCities,
-        onThemeMode = vm::setThemeMode,
-        onAccent = vm::setAccent,
-        onOpenAbout = onNavigateToAbout
-    )
-}
 
 @Composable
 fun SettingsScreen(

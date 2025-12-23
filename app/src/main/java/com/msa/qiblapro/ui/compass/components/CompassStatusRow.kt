@@ -15,16 +15,30 @@ fun CompassStatusRow(state: QiblaUiState) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
-            text = "${stringResource(R.string.accuracy)}: ${state.accuracyLabel}",
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Column {
+            Text(
+                text = stringResource(R.string.accuracy),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = state.accuracyLabel,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
 
-        Text(
-            text = "Dist: ${String.format("%.1f", state.distanceKm)} km",
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Column(horizontalAlignment = androidx.compose.ui.Alignment.End) {
+            Text(
+                text = stringResource(R.string.distance_to_kaaba),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = String.format("%.1f km", state.distanceKm),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
     }
 }
