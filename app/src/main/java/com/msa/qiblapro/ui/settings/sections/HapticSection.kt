@@ -4,11 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.msa.qiblapro.R
-import com.msa.qiblapro.ui.settings.IntSliderRow
-import com.msa.qiblapro.ui.settings.SectionHeader
-import com.msa.qiblapro.ui.settings.SettingCard
+import com.msa.qiblapro.ui.settings.model.IntSliderRow
+import com.msa.qiblapro.ui.settings.model.SectionHeader
+import com.msa.qiblapro.ui.settings.model.SettingCard
 import com.msa.qiblapro.ui.settings.SettingsUiState
-import com.msa.qiblapro.ui.settings.SwitchRow
+import com.msa.qiblapro.ui.settings.model.SwitchRow
 import com.msa.qiblapro.util.haptics.Haptics
 
 @Composable

@@ -1,6 +1,7 @@
 package com.msa.qiblapro.util
 
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.res.Configuration
 import android.os.Build
 import android.os.LocaleList
@@ -18,25 +19,20 @@ object LanguageHelper {
         } ?: "en"
     }
 
-    /** 
-     * اعمال زبان به تنظیمات اپلیکیشن
-     */
-    fun applyLanguage(context: Context, langCode: String) {
+    fun setLocale(context: Context, langCode: String): ContextWrapper {
         val locale = Locale(langCode)
         Locale.setDefault(locale)
-        
-        val resources = context.resources
-        val config = Configuration(resources.configuration)
-        
+
+        val config = Configuration(context.resources.configuration)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             config.setLocales(LocaleList(locale))
         } else {
             @Suppress("DEPRECATION")
             config.locale = locale
         }
-        
-        @Suppress("DEPRECATION")
-        resources.updateConfiguration(config, resources.displayMetrics)
+
+        val newContext = context.createConfigurationContext(config)
+        return ContextWrapper(newContext)
     }
 
     fun getFlagEmoji(lang: String): String = when (lang) {

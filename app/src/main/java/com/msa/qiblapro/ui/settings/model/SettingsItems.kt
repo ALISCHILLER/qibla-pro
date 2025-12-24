@@ -1,4 +1,4 @@
-package com.msa.qiblapro.ui.settings
+package com.msa.qiblapro.ui.settings.model
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +35,7 @@ fun SettingCard(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    androidx.compose.material3.Surface(
+    Surface(
         modifier = modifier.fillMaxWidth(),
         color = Color.Black.copy(alpha = 0.20f),
         tonalElevation = 0.dp,

@@ -1,9 +1,12 @@
 package com.msa.qiblapro.ui.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -45,22 +48,15 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            AppearanceSection(
-                state = state,
-                onAction = onAction
-            )
+            AppearanceSection(state = state, onAction = onAction)
 
             LanguageSection(
                 selectedLang = state.languageCode,
                 onAction = onAction
             )
 
-            CompassSection(
-                state = state,
-                onAction = onAction
-            )
+            CompassSection(state = state, onAction = onAction)
 
-            // این HapticSection شما callback-based هست، پس اینجا مستقیم پاس می‌دیم
             HapticSection(
                 state = state,
                 onVibration = { onAction(SettingsAction.SetVibration(it)) },
@@ -70,16 +66,17 @@ fun SettingsScreen(
                 onSound = { onAction(SettingsAction.SetSound(it)) }
             )
 
-            LocationSection(
-                state = state,
-                onAction = onAction
-            )
+            LocationSection(state = state, onAction = onAction)
 
-            AppCard(modifier = Modifier) {
-                // About row
-                androidx.compose.foundation.layout.Row(
+            // ✅ About (کلیک‌پذیر واقعی)
+            AppCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onAction(SettingsAction.OpenAbout) }
+            ) {
+                Row(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .padding(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -92,22 +89,10 @@ fun SettingsScreen(
                         text = stringResource(R.string.about_title),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(top = 2.dp)
+                        modifier = Modifier.weight(1f)
                     )
                 }
-
-                // کل کارت کلیک‌پذیر:
-                // اگر AppCard شما clickable دارد، اینجا بهش بده.
-                // اگر ندارد، ساده‌ترین راه این است:
-                // (اگر لازم داشتی کد clickable رو هم می‌دم)
-                // فعلاً با Action:
-                androidx.compose.runtime.LaunchedEffect(Unit) { /* no-op */ }
             }
-
-            // ساده‌تر: به جای کارت بالا، همین دو خط رو بذار اگر AppCard clickable داری:
-            // AppCard(Modifier.fillMaxWidth().clickable { onAction(SettingsAction.OpenAbout) }) { ... }
 
             Spacer(Modifier.height(24.dp))
         }

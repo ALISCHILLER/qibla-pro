@@ -1,21 +1,34 @@
 package com.msa.qiblapro.ui.settings
 
+import android.app.Activity
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.msa.qiblapro.util.LanguageHelper
 
 @Composable
 fun SettingsRoute(
     vm: SettingsViewModel = hiltViewModel(),
     onNavigateToAbout: () -> Unit
 ) {
-    val s by vm.state.collectAsState()
+    val context = LocalContext.current
+    val state by vm.state.collectAsState()
+
+    LaunchedEffect(Unit) {
+        vm.languageChanged.collect { langCode ->
+            LanguageHelper.setLocale(context, langCode)
+            (context as? Activity)?.recreate()
+        }
+    }
 
     SettingsScreen(
-        state = s,
+        state = state,
         onAction = { action ->
             when (action) {
+                is SettingsAction.SetLanguage -> vm.setLanguage(action.langCode)
                 is SettingsAction.SetUseTrueNorth -> vm.setUseTrueNorth(action.v)
                 is SettingsAction.SetSmoothing -> vm.setSmoothing(action.v)
                 is SettingsAction.SetAlignmentTol -> vm.setAlignmentTol(action.v)
@@ -35,7 +48,6 @@ fun SettingsRoute(
                 is SettingsAction.SetThemeMode -> vm.setThemeMode(action.mode)
                 is SettingsAction.SetAccent -> vm.setAccent(action.accent)
                 SettingsAction.OpenAbout -> onNavigateToAbout()
-                else -> {}
             }
         }
     )
