@@ -1,14 +1,7 @@
 package com.msa.qiblapro.ui.settings
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -23,16 +16,13 @@ import androidx.compose.ui.unit.dp
 import com.msa.qiblapro.R
 import com.msa.qiblapro.ui.pro.AppCard
 import com.msa.qiblapro.ui.pro.ProBackground
-import com.msa.qiblapro.ui.settings.sections.AppearanceSection
-import com.msa.qiblapro.ui.settings.sections.CompassSection
-import com.msa.qiblapro.ui.settings.sections.HapticSection
-import com.msa.qiblapro.ui.settings.sections.LanguageSection
-import com.msa.qiblapro.ui.settings.sections.LocationSection
+import com.msa.qiblapro.ui.settings.sections.*
 
 @Composable
 fun SettingsScreen(
     state: SettingsUiState,
-    onAction: (SettingsAction) -> Unit
+    onAction: (SettingsAction) -> Unit,
+    onOpenAbout: () -> Unit // ✅ اضافه شده برای هندل کردن کلیک روی "درباره ما"
 ) {
     ProBackground {
         Column(
@@ -68,11 +58,11 @@ fun SettingsScreen(
 
             LocationSection(state = state, onAction = onAction)
 
-            // ✅ About (کلیک‌پذیر واقعی)
+            // ✅ بخش درباره ما
             AppCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onAction(SettingsAction.OpenAbout) }
+                    .clickable { onOpenAbout() } // ✅ فراخوانی مستقیم تابع
             ) {
                 Row(
                     modifier = Modifier

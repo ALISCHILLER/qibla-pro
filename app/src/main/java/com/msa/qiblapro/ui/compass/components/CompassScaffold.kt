@@ -29,9 +29,10 @@ fun CompassScaffold(
                     .fillMaxSize()
                     .padding(padding)
                     .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                content = content
-            )
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                content()
+            }
         }
     }
 }

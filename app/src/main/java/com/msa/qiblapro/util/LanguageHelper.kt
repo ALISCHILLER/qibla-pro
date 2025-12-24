@@ -9,25 +9,25 @@ object LanguageHelper {
     /**
      * اعمال زبان به کل اپلیکیشن (UI + اعداد)
      */
-    fun applyLanguage(langCode: String) {
-        // تنظیم Locale برای اعداد و فرمت‌ها
-        val locale = Locale.forLanguageTag(langCode)
+    fun applyLanguage(languageCode: String) {
+        // ۱. برای فارسی شدن اعداد و محاسبات ریاضی
+        val locale = Locale.forLanguageTag(languageCode)
         Locale.setDefault(locale)
 
-        // اعمال به منابع سیستم با AppCompatDelegate برای تغییر متون UI
-        val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(langCode)
+        // ۲. برای فارسی شدن متون رابط کاربری (UI Strings)
+        val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(languageCode)
         AppCompatDelegate.setApplicationLocales(appLocale)
     }
 
     /**
-     * دریافت زبان فعلی اپلیکیشن
+     * دریافت کد زبان فعلی اپلیکیشن
      */
     fun getCurrentLanguage(): String {
         val locales = AppCompatDelegate.getApplicationLocales()
         return if (!locales.isEmpty) {
             locales[0]?.language ?: "en"
         } else {
-            Locale.getDefault().language
+            Locale.getDefault().language ?: "en"
         }
     }
 

@@ -6,15 +6,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.msa.qiblapro.util.LanguageHelper
 
 @Composable
 fun CompassHeader(languageLabel: String) {
-    // getCurrentLanguage() اکنون نیازی به context ندارد
+    // getCurrentLanguage() اکنون نیازی به context ندارد و کاملاً Reactive است
     val currentLangCode = LanguageHelper.getCurrentLanguage()
     val currentFlag = LanguageHelper.getFlagEmoji(currentLangCode)
 
@@ -25,7 +22,8 @@ fun CompassHeader(languageLabel: String) {
     ) {
         Text(
             text = "$languageLabel: ",
-            color = Color.White.copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            style = MaterialTheme.typography.labelMedium,
             fontSize = 14.sp
         )
         Text(text = currentFlag, fontSize = 18.sp)

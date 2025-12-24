@@ -28,8 +28,9 @@ data class QiblaUiState(
 
     val gpsEnabled: Boolean = true,
     val showGpsDialog: Boolean = false,
+    val showGpsPrompt: Boolean = true,
 
-    // Settings Mirror
+    // ✅ Settings Mirror
     val useTrueNorth: Boolean = true,
     val smoothing: Float = 0.65f,
     val alignTolerance: Int = 6,
@@ -43,7 +44,12 @@ data class QiblaUiState(
     val neonMapStyle: Boolean = true,
     val themeMode: ThemeMode = ThemeMode.DARK,
     val accent: NeonAccent = NeonAccent.GREEN,
-    val languageCode: String = "en"
+    val languageCode: String = "en",
+
+    // ✅ اضافه‌شده‌های ضروری برای رفع خطا
+    val autoCalibration: Boolean = true,
+    val calibrationThreshold: Int = 3,
+    val batterySaverMode: Boolean = false
 ) {
     val accuracyLabel: String
         get() = locationAccuracyM?.let { "${it.toInt()} m" } ?: "—"
