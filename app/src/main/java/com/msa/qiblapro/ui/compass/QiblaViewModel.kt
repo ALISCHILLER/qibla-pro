@@ -25,7 +25,7 @@ class QiblaViewModel @Inject constructor(
     private val locRepo: LocationRepository,
     private val compassRepo: CompassRepository,
     private val settingsRepo: SettingsRepository,
-    @ApplicationContext private val appCtx: Context
+    @param:ApplicationContext private val appCtx: Context
 ) : ViewModel() {
 
     private val _permission = MutableStateFlow(false)

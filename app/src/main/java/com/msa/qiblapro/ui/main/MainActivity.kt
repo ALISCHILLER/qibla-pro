@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.msa.qiblapro.ui.nav.AppNavGraph
 import com.msa.qiblapro.ui.settings.SettingsViewModel
 import com.msa.qiblapro.ui.theme.QiblaTheme
