@@ -19,8 +19,8 @@ fun SettingsRoute(
 
     LaunchedEffect(Unit) {
         vm.languageChanged.collect { langCode ->
-            LanguageHelper.setLocale(context, langCode)
-            (context as? Activity)?.recreate()
+            LanguageHelper.applyLanguage(langCode)
+            // (context as? Activity)?.recreate() // AppCompatDelegate usually handles this
         }
     }
 

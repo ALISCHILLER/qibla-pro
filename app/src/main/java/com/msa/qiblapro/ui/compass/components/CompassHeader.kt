@@ -14,8 +14,8 @@ import com.msa.qiblapro.util.LanguageHelper
 
 @Composable
 fun CompassHeader(languageLabel: String) {
-    val context = LocalContext.current
-    val currentLangCode = LanguageHelper.getCurrentLanguage(context)
+    // getCurrentLanguage() اکنون نیازی به context ندارد
+    val currentLangCode = LanguageHelper.getCurrentLanguage()
     val currentFlag = LanguageHelper.getFlagEmoji(currentLangCode)
 
     Row(
