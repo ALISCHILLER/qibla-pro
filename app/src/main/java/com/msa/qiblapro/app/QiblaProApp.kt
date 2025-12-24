@@ -14,7 +14,7 @@ class QiblaProApp : Application() {
 
         val settingsRepo = SettingsRepository(this)
         val langCode = runBlocking { settingsRepo.settingsFlow.first().languageCode }
-        if (LanguageHelper.getCurrentLanguage() != langCode) {
+        if (LanguageHelper.getCurrentLanguageTag() != langCode) {
             LanguageHelper.applyLanguage(langCode)
         }
     }

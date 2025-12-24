@@ -12,7 +12,7 @@ import com.msa.qiblapro.util.LanguageHelper
 @Composable
 fun CompassHeader(languageLabel: String) {
     // getCurrentLanguage() اکنون نیازی به context ندارد و کاملاً Reactive است
-    val currentLangCode = LanguageHelper.getCurrentLanguage()
+    val currentLangCode = LanguageHelper.getCurrentLanguageTag()
     val currentFlag = LanguageHelper.getFlagEmoji(currentLangCode)
 
     Row(
