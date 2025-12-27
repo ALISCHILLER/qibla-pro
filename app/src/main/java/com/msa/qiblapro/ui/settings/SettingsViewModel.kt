@@ -34,7 +34,8 @@ data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.DARK,
     val accent: NeonAccent = NeonAccent.GREEN,
     val hasSeenOnboarding: Boolean = false,
-    val languageCode: String = "system"
+    val languageCode: String = "system",
+    val isLoaded: Boolean = false
 )
 
 @HiltViewModel
@@ -67,7 +68,8 @@ class SettingsViewModel @Inject constructor(
                 themeMode = s.themeMode,
                 accent = s.accent,
                 hasSeenOnboarding = s.hasSeenOnboarding,
-                languageCode = s.languageCode
+                languageCode = s.languageCode,
+                isLoaded = true
             )
         }
         .stateIn(

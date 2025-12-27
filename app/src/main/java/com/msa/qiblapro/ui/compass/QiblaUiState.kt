@@ -45,7 +45,7 @@ data class QiblaUiState(
     val neonMapStyle: Boolean = true,
     val themeMode: ThemeMode = ThemeMode.DARK,
     val accent: NeonAccent = NeonAccent.GREEN,
-    val languageCode: String = "en",
+    val languageCode: String = "system",
 
     // ✅ اضافه‌شده‌های ضروری برای رفع خطا
     val autoCalibration: Boolean = true,

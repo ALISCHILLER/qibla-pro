@@ -5,6 +5,8 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.hardware.display.DisplayManager
+import android.view.Display
 import android.view.Surface
 import android.view.WindowManager
 import android.os.Build
@@ -179,14 +181,21 @@ class CompassRepository(
     }
 
     private fun getDisplayRotation(): Int {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            context.display?.rotation ?: run {
+        return try {
+            val dm = context.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager
+            val display =
+                dm?.getDisplay(Display.DEFAULT_DISPLAY)
+                    ?: dm?.displays?.firstOrNull()
+
+            display?.rotation ?: Surface.ROTATION_0
+        } catch (t: Throwable) {
+            // fallback: never crash the app because of rotation
+            try {
                 @Suppress("DEPRECATION")
                 windowManager.defaultDisplay.rotation
+            } catch (_: Throwable) {
+                Surface.ROTATION_0
             }
-        } else {
-            @Suppress("DEPRECATION")
-            windowManager.defaultDisplay.rotation
         }
     }
 

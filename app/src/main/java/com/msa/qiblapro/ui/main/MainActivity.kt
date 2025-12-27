@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
 
             // Apply language only if different, then recreate to reload resources
             LaunchedEffect(state.languageCode) {
+                if (!state.isLoaded) return@LaunchedEffect
                 val current = LanguageHelper.getCurrentLanguageTag()
                 val target = LanguageHelper.normalizeLanguageTag(state.languageCode)
 

@@ -79,7 +79,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
             accent = accentFromValue(p[Keys.ACCENT_TYPE_V2]),
 
             hasSeenOnboarding = p[Keys.HAS_SEEN_ONBOARDING] ?: false,
-            languageCode = p[Keys.LANGUAGE_CODE] ?: "en"
+            languageCode = p[Keys.LANGUAGE_CODE] ?: "system"
         )
     }
 
