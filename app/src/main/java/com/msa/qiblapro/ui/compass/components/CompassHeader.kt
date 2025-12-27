@@ -12,9 +12,8 @@ import androidx.compose.ui.unit.sp
 import com.msa.qiblapro.util.LanguageHelper
 
 @Composable
-fun CompassHeader(languageLabel: String) {
-    val currentLangCode = LanguageHelper.getCurrentLanguageTag()
-    val currentFlag = LanguageHelper.getFlagEmoji(currentLangCode)
+fun CompassHeader(languageLabel: String, languageCode: String) {
+    val currentFlag = LanguageHelper.getFlagEmoji(languageCode)
 
     Row(
         modifier = Modifier.fillMaxWidth(),

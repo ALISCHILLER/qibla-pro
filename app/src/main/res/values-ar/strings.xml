@@ -7,6 +7,7 @@
     <string name="cancel">إلغاء</string>
     <string name="save">حفظ</string>
     <string name="loading">جارٍ التحميل…</string>
+    <string name="try_again">إعادة المحاولة</string>
 
     <!-- Bottom tabs -->
     <string name="tab_compass">البوصلة</string>
@@ -19,6 +20,12 @@
     <string name="language_en">الإنجليزية</string>
     <string name="language_fa">الفارسية</string>
     <string name="language_ar">العربية</string>
+
+    <!-- Compass Directions -->
+    <string name="north_short">ش</string>
+    <string name="east_short">ق</string>
+    <string name="south_short">ج</string>
+    <string name="west_short">غ</string>
 
     <!-- Permission -->
     <string name="permission_title">إذن الموقع</string>
@@ -51,6 +58,10 @@
     <!-- Compass -->
     <string name="facing_qibla">أنت باتجاه القبلة ✅</string>
     <string name="rotate_to_qibla">قم بالدوران %1$d° نحو القبلة</string>
+    <string name="calibration_title">مطلوب معايرة</string>
+    <string name="calibration_hint">قم بتحريك هاتفك في نمط الرقم 8 (∞) في الهواء لمعايرة المستشعرات</string>
+    <string name="sensor_not_found_title">المستشعر غير موجود</string>
+    <string name="sensor_not_found_msg">يفتقر هذا الجهاز إلى مستشعر مغناطيسي أو مستشعر دوران. لا يزال بإمكانك استخدام الخريطة للعثور على القبلة.</string>
 
     <!-- Info labels -->
     <string name="qibla_direction">زاوية القبلة</string>
@@ -92,6 +103,18 @@
     <string name="feedback_section_title">التنبيهات</string>
     <string name="feedback_vibration_title">الاهتزاز</string>
     <string name="feedback_vibration_desc">اهتزاز خفيف عند التوجه نحو القبلة</string>
+    <string name="haptic_strength_title">شدة الاهتزاز</string>
+    <string name="haptic_pattern_title">نمط الاهتزاز</string>
+    <string name="haptic_strength_low">منخفض</string>
+    <string name="haptic_strength_medium">متوسط</string>
+    <string name="haptic_strength_high">عالي</string>
+    <string name="haptic_pattern_short">نقرة قصيرة</string>
+    <string name="haptic_pattern_double">نقرة مزدوجة</string>
+    <string name="haptic_pattern_long">نبض طويل</string>
+
+    <string name="haptic_cooldown_title">فاصل الاهتزاز</string>
+    <string name="haptic_cooldown_desc">التأخير بين الاهتزازات المتتالية</string>
+
     <string name="feedback_sound_title">الصوت</string>
     <string name="feedback_sound_desc">تشغيل صوت خفيف عند تطابق الاتجاه مع القبلة</string>
 
@@ -127,4 +150,6 @@
     <string name="reset_dialog_message">هل تريد بالتأكيد إعادة جميع الإعدادات إلى الوضع الافتراضي؟</string>
     <string name="reset">إعادة ضبط</string>
 
+    <string name="about_title">حول</string>
+    <string name="about_version">الإصدار %1$s</string>
 </resources>

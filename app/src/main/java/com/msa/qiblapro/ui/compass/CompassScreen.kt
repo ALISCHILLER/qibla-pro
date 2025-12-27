@@ -102,7 +102,10 @@ fun CompassScreen(
 
     CompassScaffold(snackbarHostState = snackbarHostState) {
         // Header
-        CompassHeader(languageLabel = stringResource(R.string.language_label))
+        CompassHeader(
+            languageLabel = stringResource(R.string.language_label),
+            languageCode = state.languageCode
+        )
 
         // Calibration hint card
         if (state.isSensorAvailable && state.needsCalibration) {

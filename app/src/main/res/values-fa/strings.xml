@@ -21,6 +21,12 @@
     <string name="language_fa">فارسی</string>
     <string name="language_ar">عربی</string>
 
+    <!-- Compass Directions -->
+    <string name="north_short">ش</string>
+    <string name="east_short">خ</string>
+    <string name="south_short">ج</string>
+    <string name="west_short">غ</string>
+
     <!-- Permission -->
     <string name="permission_title">دسترسی به موقعیت</string>
     <string name="permission_message">
@@ -59,7 +65,7 @@
 
     <!-- Info labels -->
     <string name="qibla_direction">زاویه قبله</string>
-    <string name="distance_to_kaaba">فاصله تا کعبه</string>
+    <string name="distance_to_kaaba">Distance to Kaaba</string>
     <string name="accuracy">دقت</string>
     <string name="altitude">ارتفاع</string>
     <string name="latitude">عرض جغرافیایی</string>

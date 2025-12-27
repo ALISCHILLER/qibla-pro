@@ -21,6 +21,12 @@
     <string name="language_fa">Persian</string>
     <string name="language_ar">Arabic</string>
 
+    <!-- Compass Directions -->
+    <string name="north_short">N</string>
+    <string name="east_short">E</string>
+    <string name="south_short">S</string>
+    <string name="west_short">W</string>
+
     <!-- Permission -->
     <string name="permission_title">Location access</string>
     <string name="permission_message">

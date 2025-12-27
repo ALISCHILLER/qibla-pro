@@ -13,12 +13,10 @@ object LanguageHelper {
      * - "system" نگه داشته می‌شود
      * - "fa-IR" -> "fa"
      * - "ar-SA" -> "ar"
-     * - اگر ناشناخته بود -> "en"
      */
     fun normalizeLanguageTag(input: String?): String {
         val raw = input?.trim()?.lowercase().orEmpty()
-        if (raw.isBlank()) return "en"
-        if (raw == "system") return "system"
+        if (raw.isBlank() || raw == "system") return "system"
 
         val base = raw
             .replace('_', '-')
@@ -35,18 +33,18 @@ object LanguageHelper {
     }
 
     /**
-     * زبان فعلی اپ (همون چیزی که AppCompatDelegate ست کرده)
-     * اگر چیزی ست نشده باشد => "system"
+     * زبان فعلی اپ
      */
     fun getCurrentLanguageTag(): String {
-        val tags = AppCompatDelegate.getApplicationLocales().toLanguageTags()
-        return if (tags.isNullOrBlank()) "system" else normalizeLanguageTag(tags)
+        val locales = AppCompatDelegate.getApplicationLocales()
+        if (locales.isEmpty) return "system"
+        
+        val tag = locales.toLanguageTags()
+        return normalizeLanguageTag(tag)
     }
 
     /**
-     * اعمال زبان در سطح اپ:
-     * - system => خالی کردن app locales (برگرد به زبان سیستم)
-     * - غیر از آن => ست کردن locale
+     * اعمال زبان
      */
     fun applyLanguage(tag: String) {
         val normalized = normalizeLanguageTag(tag)
@@ -58,44 +56,39 @@ object LanguageHelper {
     }
 
     /**
-     * RTL/LTR بر اساس زبان (fa/ar => RTL)
-     * اگر "system" باشد از Locale فعلی دستگاه استفاده می‌کند.
+     * تشخیص RTL
      */
     fun isRtlLanguage(tag: String): Boolean {
         val normalized = normalizeLanguageTag(tag)
-
         val locale = if (normalized == "system") {
             Locale.getDefault()
         } else {
             Locale.forLanguageTag(normalized)
         }
-
         return TextUtils.getLayoutDirectionFromLocale(locale) == View.LAYOUT_DIRECTION_RTL
     }
 
     /**
      * ایموجی پرچم بر اساس زبان:
-     * - fa => 🇮🇷
-     * - ar => 🇸🇦
-     * - en => 🇺🇸
-     * - system => 🌐 (یا بر اساس زبان سیستم)
+     * - fa => 🇮🇷 (ایران)
+     * - en => 🇬🇧 (انگلیس)
+     * - ar => 🇸🇦 (عربستان)
      */
     fun getFlagEmoji(tag: String): String {
         val normalized = normalizeLanguageTag(tag)
 
         return when (normalized) {
             "fa" -> "🇮🇷"
+            "en" -> "🇬🇧"
             "ar" -> "🇸🇦"
-            "en" -> "🇺🇸"
             "system" -> {
-                // اگر دوست داری، می‌تونی سیستم رو هم مپ کنی به پرچم مربوطه:
                 when (Locale.getDefault().language.lowercase()) {
                     "fa" -> "🇮🇷"
                     "ar" -> "🇸🇦"
-                    else -> "🌐"
+                    else -> "🇬🇧" // پیش‌فرض برای انگلیسی یا سایر
                 }
             }
-            else -> "🌐"
+            else -> "🇬🇧"
         }
     }
 }
