@@ -1,5 +1,6 @@
 package com.msa.qiblapro.domain.qibla.engine
 
+import com.msa.qiblapro.domain.qibla.AngleMath
 import com.msa.qiblapro.domain.qibla.QiblaMath
 
 /**
@@ -56,6 +57,7 @@ class QiblaEngine(
      * محاسبه خروجی براساس ورودی فعلی
      */
     fun calculate(input: QiblaEngineInput): QiblaEngineOutput {
+        val effectiveAlpha = adjustAlphaForAccuracy(input.smoothingFactor, input.sensorAccuracy)
         // north-adjusted = تنظیم‌شده بر اساس declination
         val northAdjusted = if (input.useTrueNorth) {
             AngleMath.norm360(input.rawHeadingDeg + input.declinationDeg)
@@ -74,11 +76,11 @@ class QiblaEngine(
 
         // اگر smoother جدید نیاز بود (یا alpha تغییر کرده)
         if (smoother == null) {
-            smoother = HeadingSmoother(input.smoothingFactor, northAdjusted)
-            lastAlpha = input.smoothingFactor
-        } else if (input.smoothingFactor != lastAlpha) {
-            smoother!!.setAlpha(input.smoothingFactor)
-            lastAlpha = input.smoothingFactor
+            smoother = HeadingSmoother(effectiveAlpha, northAdjusted)
+            lastAlpha = effectiveAlpha
+        } else if (effectiveAlpha != lastAlpha) {
+            smoother!!.setAlpha(effectiveAlpha)
+            lastAlpha = effectiveAlpha
         }
 
         // اگر آستانه کالیبراسیون تغییر کرده، ترکر را ریست کن
@@ -113,5 +115,14 @@ class QiblaEngine(
             isFacing = isFacing,
             needsCalibration = needsCalib
         )
+    }
+    private fun adjustAlphaForAccuracy(alpha: Float, accuracy: Int): Float {
+        val cap = when (accuracy) {
+            0 -> 0.20f
+            1 -> 0.35f
+            2 -> 0.60f
+            else -> 0.90f
+        }
+        return alpha.coerceIn(0.01f, cap)
     }
 }

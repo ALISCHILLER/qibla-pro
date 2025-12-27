@@ -1,10 +1,10 @@
 package com.msa.qiblapro.ui.gps
 
 import android.app.Activity
-import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.IntentSenderRequest
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOff
@@ -19,7 +19,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.msa.qiblapro.R
+import com.msa.qiblapro.util.GpsResolver
 import com.msa.qiblapro.util.GpsUtils
+import kotlinx.coroutines.launch
 
 @Composable
 fun GpsEnableDialog(
@@ -29,9 +31,16 @@ fun GpsEnableDialog(
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
+    val scope = rememberCoroutineScope()
 
-    val launcher = rememberLauncherForActivityResult(
+    val settingsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (GpsUtils.isLocationEnabled(context)) onEnabled()
+    }
+
+    val intentSenderLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
     ) {
         if (GpsUtils.isLocationEnabled(context)) onEnabled()
     }
@@ -82,8 +91,23 @@ fun GpsEnableDialog(
                     Button(
                         modifier = Modifier.weight(1f),
                         onClick = {
-                            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                            if (activity != null) launcher.launch(intent) else onDismiss()
+                            if (activity == null) {
+                                onDismiss()
+                                return@Button
+                            }
+
+                            scope.launch {
+                                val intentSender = GpsResolver.buildEnableLocationIntentSender(activity)
+                                if (intentSender != null) {
+                                    intentSenderLauncher.launch(
+                                        IntentSenderRequest.Builder(intentSender).build()
+                                    )
+                                } else {
+                                    settingsLauncher.launch(
+                                        android.content.Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                                    )
+                                }
+                            }
                         }
                     ) {
                         Icon(Icons.Filled.LocationOn, null)

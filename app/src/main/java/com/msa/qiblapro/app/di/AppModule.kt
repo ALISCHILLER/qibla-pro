@@ -2,6 +2,12 @@ package com.msa.qiblapro.app.di
 
 import android.content.Context
 import android.hardware.SensorManager
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.preferencesDataStoreFile
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.msa.qiblapro.data.compass.CompassRepository
@@ -26,8 +32,19 @@ object AppModule {
     fun provideSensorManager(@ApplicationContext ctx: Context): SensorManager =
         ctx.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
+
+    @Provides
+    @Singleton
+    fun provideSettingsDataStore(@ApplicationContext ctx: Context): DataStore<Preferences> =
+        PreferenceDataStoreFactory.create(
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { emptyPreferences() }
+            ),
+            produceFile = { ctx.preferencesDataStoreFile("qibla_settings") }
+        )
+
     @Provides @Singleton
-    fun provideSettingsRepo(@ApplicationContext ctx: Context) = SettingsRepository(ctx)
+    fun provideSettingsRepo(dataStore: DataStore<Preferences>) = SettingsRepository(dataStore)
 
     @Provides @Singleton
     fun provideLocationRepo(

@@ -1,29 +1,18 @@
 package com.msa.qiblapro.ui.settings
 
-import android.app.Activity
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.msa.qiblapro.util.LanguageHelper
 
 @Composable
 fun SettingsRoute(
     vm: SettingsViewModel = hiltViewModel(),
     onNavigateToAbout: () -> Unit
 ) {
-    val context = LocalContext.current
+
     val state by vm.state.collectAsState()
 
-    // ✅ به محض تغییر زبان، Locale و UI اپ به‌روزرسانی می‌شود
-    LaunchedEffect(Unit) {
-        vm.languageChanged.collect { langCode ->
-            LanguageHelper.applyLanguage(langCode)
-            (context as? Activity)?.recreate() // برای بازسازی کامل UI با زبان جدید
-        }
-    }
 
     // ✅ نمایش صفحه تنظیمات
     SettingsScreen(

@@ -1,4 +1,4 @@
-package com.msa.qiblapro.ui.settings.model
+package com.msa.qiblapro.ui.settings.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,15 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
-@Composable
-fun SectionHeader(title: String, modifier: Modifier = Modifier) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleLarge,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = modifier.padding(bottom = 6.dp)
-    )
-}
 
 @Composable
 fun SettingCard(
@@ -78,7 +69,7 @@ fun IntSliderRow(
     value: Int,
     valueRange: IntRange,
     step: Int = 1,
-    label: @Composable (Int) -> String = { it.toString() }, // ✅ تغییر مهم
+    label: @Composable (Int) -> String = { it.toString() },
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {

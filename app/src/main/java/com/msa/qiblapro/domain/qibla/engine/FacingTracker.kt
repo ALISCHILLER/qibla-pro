@@ -1,5 +1,7 @@
 package com.msa.qiblapro.domain.qibla.engine
 
+import com.msa.qiblapro.domain.qibla.AngleMath
+
 class FacingTracker(
     private val tolOn: Int,
     private val tolOff: Int

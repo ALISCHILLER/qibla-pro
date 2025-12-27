@@ -1,4 +1,4 @@
-package com.msa.qiblapro.domain.qibla.engine
+package com.msa.qiblapro.domain.qibla
 
 import kotlin.math.abs
 
@@ -12,7 +12,7 @@ object AngleMath {
 
     /** Shortest signed difference (a - b) in (-180..180] */
     fun diffDeg(a: Float, b: Float): Float {
-        var d = (a - b + 540f) % 360f - 180f
+        val d = (a - b + 540f) % 360f - 180f
         return d
     }
 

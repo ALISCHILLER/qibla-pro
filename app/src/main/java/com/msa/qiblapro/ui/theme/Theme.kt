@@ -1,14 +1,9 @@
 package com.msa.qiblapro.ui.theme
 
-import android.view.View
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
 import com.msa.qiblapro.data.settings.NeonAccent
 import com.msa.qiblapro.data.settings.ThemeMode
 
@@ -64,15 +59,9 @@ fun QiblaTheme(
 
     val colors = if (darkTheme) getDarkColorScheme(accent) else getLightColorScheme(accent)
 
-    val locale = LocalConfiguration.current.locales[0]
-    val isRtl = android.text.TextUtils.getLayoutDirectionFromLocale(locale) == View.LAYOUT_DIRECTION_RTL
-    val dir = if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
-
-    CompositionLocalProvider(LocalLayoutDirection provides dir) {
-        MaterialTheme(
-            colorScheme = colors,
-            typography = Typography,
-            content = content
-        )
-    }
+    MaterialTheme(
+        colorScheme = colors,
+        typography = Typography,
+        content = content
+    )
 }

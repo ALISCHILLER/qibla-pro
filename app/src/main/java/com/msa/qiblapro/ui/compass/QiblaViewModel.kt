@@ -1,11 +1,16 @@
 package com.msa.qiblapro.ui.compass
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.SensorManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.msa.qiblapro.data.compass.CompassRepository
+import com.msa.qiblapro.data.compass.CompassResult
 import com.msa.qiblapro.data.location.LocationRepository
+import com.msa.qiblapro.data.location.UserLocationResult
 import com.msa.qiblapro.data.settings.AppSettings
 import com.msa.qiblapro.data.settings.SettingsRepository
 import com.msa.qiblapro.domain.qibla.QiblaMath
@@ -17,7 +22,27 @@ import com.msa.qiblapro.util.GpsUtils
 import com.msa.qiblapro.util.LanguageHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,6 +55,7 @@ class QiblaViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _permission = MutableStateFlow(false)
+
     private val _state = MutableStateFlow(QiblaUiState())
     val state: StateFlow<QiblaUiState> = _state.asStateFlow()
 
@@ -39,8 +65,17 @@ class QiblaViewModel @Inject constructor(
     private val compassRestart = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private val engine = QiblaEngine()
 
-    // ✅ آخرین تنظیمات برای استفاده داخل observeCompass/observeLocation بدون combine تکراری
-    private var latestSettings: AppSettings = AppSettings()
+    /**
+     * ✅ settingsState را از settingsFlow می‌گیریم، و distinct را قبل از stateIn اعمال می‌کنیم
+     * تا هم درست باشد، هم warning ندهد.
+     */
+    private val settingsState = settingsRepo.settingsFlow
+        .distinctUntilChanged()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = AppSettings()
+        )
 
     private var lastHapticTimeMs: Long = 0L
     private var calibrationGuideDismissedUntilMs: Long = 0L
@@ -49,34 +84,40 @@ class QiblaViewModel @Inject constructor(
         observeSettings()
         observeLocation()
         observeCompass()
+        observeGpsState()
     }
 
     private fun observeSettings() {
-        settingsRepo.settingsFlow
-            .distinctUntilChanged()
+        settingsState
             .onEach { s ->
-                latestSettings = s
-
                 _state.update {
                     it.copy(
                         themeMode = s.themeMode,
                         accent = s.accent,
+
+                        // engine-related
                         useTrueNorth = s.useTrueNorth,
                         smoothing = s.smoothing,
                         alignTolerance = s.alignmentToleranceDeg,
-                        hapticStrength = s.hapticStrength,
-                        hapticPattern = s.hapticPattern,
-                        hapticCooldownMs = s.hapticCooldownMs,
-                        languageCode = s.languageCode,
-                        showGpsPrompt = s.showGpsPrompt,
                         autoCalibration = s.autoCalibration,
                         calibrationThreshold = s.calibrationThreshold,
                         batterySaverMode = s.batterySaverMode,
-                        neonMapStyle = s.neonMapStyle,
-                        showIranCities = s.showIranCities,
-                        mapType = s.mapType,
+
+                        // feedback
                         enableVibration = s.enableVibration,
-                        enableSound = s.enableSound
+                        hapticStrength = s.hapticStrength,
+                        hapticPattern = s.hapticPattern,
+                        hapticCooldownMs = s.hapticCooldownMs,
+                        enableSound = s.enableSound,
+
+                        // map
+                        mapType = s.mapType,
+                        showIranCities = s.showIranCities,
+                        neonMapStyle = s.neonMapStyle,
+
+                        // ui
+                        showGpsPrompt = s.showGpsPrompt,
+                        languageCode = s.languageCode
                     )
                 }
             }
@@ -86,28 +127,66 @@ class QiblaViewModel @Inject constructor(
     private fun observeLocation() {
         _permission
             .flatMapLatest { granted ->
-                if (!granted) emptyFlow()
+                if (!granted) flowOf(UserLocationResult.PermissionDenied)
                 else locRepo.locationFlow()
             }
-            .onEach { loc ->
-                val s = latestSettings
+            .catch {
+                _state.update { it.copy(hasLocation = false) }
+            }
+            .combine(settingsState) { result, s -> result to s }
+            .onEach { (result, s) ->
+                when (result) {
+                    is UserLocationResult.Ok -> {
+                        val loc = result.loc
+                        val qibla = QiblaMath.bearingToKaaba(loc.lat, loc.lon).toFloat()
+                        val decl = if (s.useTrueNorth) {
+                            QiblaMath.declinationDeg(
+                                loc.lat,
+                                loc.lon,
+                                loc.alt,
+                                System.currentTimeMillis()
+                            )
+                        } else {
+                            0f
+                        }
 
-                val qibla = QiblaMath.bearingToKaaba(loc.lat, loc.lon).toFloat()
-                val decl = if (s.useTrueNorth) {
-                    QiblaMath.declinationDeg(loc.lat, loc.lon, loc.alt, System.currentTimeMillis())
-                } else 0f
+                        _state.update {
+                            it.copy(
+                                hasLocation = true,
+                                userLat = loc.lat,
+                                userLon = loc.lon,
+                                locationAccuracyM = loc.accuracyM,
+                                qiblaBearingDeg = qibla,
+                                declinationDeg = decl,
+                                distanceKm = QiblaMath.distanceKmToKaaba(loc.lat, loc.lon),
+                                gpsEnabled = GpsUtils.isLocationEnabled(appCtx)
+                            )
+                        }
+                    }
 
-                _state.update {
-                    it.copy(
-                        hasLocation = true,
-                        userLat = loc.lat,
-                        userLon = loc.lon,
-                        locationAccuracyM = loc.accuracyM,
-                        qiblaBearingDeg = qibla,
-                        declinationDeg = decl,
-                        distanceKm = QiblaMath.distanceKmToKaaba(loc.lat, loc.lon),
-                        gpsEnabled = GpsUtils.isLocationEnabled(appCtx)
-                    )
+                    UserLocationResult.PermissionDenied -> {
+                        _state.update {
+                            it.copy(
+                                hasLocation = false,
+                                hasLocationPermission = false,
+                                showGpsDialog = false
+                            )
+                        }
+                    }
+
+                    UserLocationResult.GpsDisabled -> {
+                        _state.update {
+                            it.copy(
+                                hasLocation = false,
+                                gpsEnabled = false,
+                                showGpsDialog = it.hasLocationPermission && it.showGpsPrompt
+                            )
+                        }
+                    }
+
+                    is UserLocationResult.Error -> {
+                        _state.update { it.copy(hasLocation = false) }
+                    }
                 }
             }
             .launchIn(viewModelScope)
@@ -117,59 +196,112 @@ class QiblaViewModel @Inject constructor(
         compassRestart
             .onStart { emit(Unit) }
             .flatMapLatest {
-                _permission.map { granted -> granted }
+                _permission.combine(settingsState) { granted, s -> granted to s }
             }
-            .flatMapLatest { granted ->
-                if (!granted) emptyFlow()
-                else {
-                    val s = latestSettings
-                    val delay =
-                        if (s.batterySaverMode) SensorManager.SENSOR_DELAY_UI else SensorManager.SENSOR_DELAY_GAME
+            .flatMapLatest { (granted, s) ->
+                if (!granted) {
+                    emptyFlow()
+                } else {
+                    val delay = if (s.batterySaverMode) {
+                        SensorManager.SENSOR_DELAY_UI
+                    } else {
+                        SensorManager.SENSOR_DELAY_GAME
+                    }
 
                     compassRepo.compassFlow(delay)
+                        .map { result -> result to s }
                         .catch {
                             _state.update { it.copy(isSensorAvailable = false) }
                         }
                 }
             }
-            .onEach { reading ->
-                val s = latestSettings
+            .onEach { (result, s) ->
+                when (result) {
+                    is CompassResult.Success -> {
+                        val reading = result.reading
 
-                val input = QiblaEngineInput(
-                    rawHeadingDeg = reading.headingMagneticDeg,
-                    qiblaBearingDeg = _state.value.qiblaBearingDeg,
-                    declinationDeg = _state.value.declinationDeg,
-                    useTrueNorth = s.useTrueNorth,
-                    smoothingFactor = s.smoothing,
-                    alignmentTolerance = s.alignmentToleranceDeg,
-                    sensorAccuracy = reading.accuracy,
-                    autoCalibration = s.autoCalibration,
-                    calibrationThreshold = s.calibrationThreshold
-                )
+                        val input = QiblaEngineInput(
+                            rawHeadingDeg = reading.headingMagneticDeg,
+                            qiblaBearingDeg = _state.value.qiblaBearingDeg,
+                            declinationDeg = _state.value.declinationDeg,
+                            // ✅ True North فقط وقتی location داریم معنی داره
+                            useTrueNorth = s.useTrueNorth && _state.value.hasLocation,
+                            smoothingFactor = s.smoothing,
+                            alignmentTolerance = s.alignmentToleranceDeg,
+                            sensorAccuracy = reading.accuracy,
+                            autoCalibration = s.autoCalibration,
+                            calibrationThreshold = s.calibrationThreshold
+                        )
 
-                val out = engine.calculate(input)
+                        val out = engine.calculate(input)
 
-                handleHaptics(out.isFacing, s)
+                        handleHaptics(out.isFacing, s)
 
+                        _state.update {
+                            it.copy(
+                                headingDeg = out.headingDeg,
+                                rotationErrorDeg = out.rotationErrorDeg,
+                                isFacingQibla = out.isFacing,
+                                needsCalibration = out.needsCalibration,
+                                showCalibrationGuide = out.needsCalibration &&
+                                        System.currentTimeMillis() >= calibrationGuideDismissedUntilMs,
+                                isSensorAvailable = true
+                            )
+                        }
+                    }
+
+                    CompassResult.SensorUnavailable -> {
+                        _state.update { it.copy(isSensorAvailable = false) }
+                    }
+
+                    is CompassResult.Failure -> {
+                        _state.update { it.copy(isSensorAvailable = false) }
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeGpsState() {
+        gpsStateFlow()
+            .onEach { (gpsEnabled, airplaneMode) ->
                 _state.update {
                     it.copy(
-                        headingDeg = out.headingDeg,
-                        rotationErrorDeg = out.rotationErrorDeg,
-                        isFacingQibla = out.isFacing,
-                        needsCalibration = out.needsCalibration,
-                        showCalibrationGuide = out.needsCalibration &&
-                                System.currentTimeMillis() >= calibrationGuideDismissedUntilMs,
-                        isSensorAvailable = true
+                        gpsEnabled = gpsEnabled,
+                        airplaneModeOn = airplaneMode,
+                        showGpsDialog = it.hasLocationPermission && !gpsEnabled && it.showGpsPrompt
                     )
                 }
             }
             .launchIn(viewModelScope)
     }
 
+    private fun gpsStateFlow() = callbackFlow {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val enabled = GpsUtils.isLocationEnabled(appCtx)
+                val airplane = GpsUtils.isAirplaneModeOn(appCtx)
+                trySend(enabled to airplane)
+            }
+        }
+
+        val filter = IntentFilter().apply {
+            addAction(android.location.LocationManager.PROVIDERS_CHANGED_ACTION)
+            addAction(android.location.LocationManager.MODE_CHANGED_ACTION)
+            addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED)
+        }
+
+        // اولین مقدار
+        trySend(GpsUtils.isLocationEnabled(appCtx) to GpsUtils.isAirplaneModeOn(appCtx))
+
+        appCtx.registerReceiver(receiver, filter)
+        awaitClose { appCtx.unregisterReceiver(receiver) }
+    }
+
     private fun handleHaptics(isFacing: Boolean, s: AppSettings) {
-        // ✅ اگر ویبره خاموشه، هیچ event نده
         if (!s.enableVibration) return
 
+        // edge trigger: فقط وقتی وارد حالت facing می‌شیم
         if (isFacing && !_state.value.isFacingQibla) {
             val now = System.currentTimeMillis()
             if (now - lastHapticTimeMs >= s.hapticCooldownMs) {
@@ -186,15 +318,8 @@ class QiblaViewModel @Inject constructor(
                 is SettingsAction.SetAccent -> settingsRepo.setAccent(action.accent)
 
                 is SettingsAction.SetLanguage -> {
-                    // ✅ Normalize برای جلوگیری از fa vs fa-IR mismatch
                     val target = LanguageHelper.normalizeLanguageTag(action.langCode)
-
                     settingsRepo.setLanguageCode(target)
-                    LanguageHelper.applyLanguage(target)
-
-                    // ✅ به UI/Activity بگو باید recreate بشه تا strings دوباره load بشن
-                    // (این event رو باید به AppEvent اضافه کنی)
-                    _events.tryEmit(AppEvent.RecreateActivity)
                 }
 
                 is SettingsAction.SetUseTrueNorth -> settingsRepo.setUseTrueNorth(action.v)
@@ -209,10 +334,12 @@ class QiblaViewModel @Inject constructor(
 
                 is SettingsAction.SetMapType -> settingsRepo.setMapType(action.v)
                 is SettingsAction.SetIranCities -> settingsRepo.setShowIranCities(action.v)
+
                 is SettingsAction.SetShowGpsPrompt -> settingsRepo.setShowGpsPrompt(action.v)
                 is SettingsAction.SetBatterySaver -> settingsRepo.setBatterySaver(action.v)
                 is SettingsAction.SetBgUpdateFreq -> settingsRepo.setBgFreqSec(action.v)
                 is SettingsAction.SetLowPowerLoc -> settingsRepo.setLowPowerLocation(action.v)
+
                 is SettingsAction.SetAutoCalib -> settingsRepo.setAutoCalibration(action.v)
                 is SettingsAction.SetCalibThreshold -> settingsRepo.setCalibrationThreshold(action.v)
 
@@ -221,10 +348,6 @@ class QiblaViewModel @Inject constructor(
         }
     }
 
-    /**
-     * ✅ mapType در AppSettings از نوع Int است.
-     * مقادیر معتبر 1..4 هستند (در SettingsRepository هم coerce می‌شوند).
-     */
     fun setMapType(v: Int) {
         viewModelScope.launch { settingsRepo.setMapType(v) }
     }
@@ -251,7 +374,11 @@ class QiblaViewModel @Inject constructor(
         _state.update { it.copy(showCalibrationGuide = false) }
     }
 
-    fun hideGpsDialog() { _state.update { it.copy(showGpsDialog = false) } }
+    fun hideGpsDialog() {
+        _state.update { it.copy(showGpsDialog = false) }
+    }
 
-    fun requestCalibration() { _state.update { it.copy(showCalibrationSheet = true) } }
+    fun requestCalibration() {
+        _state.update { it.copy(showCalibrationSheet = true) }
+    }
 }

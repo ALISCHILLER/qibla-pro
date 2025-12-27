@@ -1,19 +1,18 @@
 package com.msa.qiblapro.data.settings
 
-import android.content.Context
+
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-private val Context.ds by preferencesDataStore(name = "qibla_settings")
-
-class SettingsRepository(private val ctx: Context) {
+class SettingsRepository(private val dataStore: DataStore<Preferences>) {
 
     private object Keys {
         val USE_TRUE_NORTH = booleanPreferencesKey("use_true_north")
@@ -38,14 +37,16 @@ class SettingsRepository(private val ctx: Context) {
         val SHOW_IRAN_CITIES = booleanPreferencesKey("show_iran_cities")
 
         val NEON_MAP_STYLE = booleanPreferencesKey("neon_map_style")
-        
-        val THEME_MODE = intPreferencesKey("theme_mode")
-        val ACCENT_TYPE = intPreferencesKey("accent_type")
+
+        val THEME_MODE = stringPreferencesKey("theme_mode")
+        val ACCENT_TYPE = stringPreferencesKey("accent_type")
+        val LEGACY_THEME_MODE = intPreferencesKey("theme_mode")
+        val LEGACY_ACCENT_TYPE = intPreferencesKey("accent_type")
         val HAS_SEEN_ONBOARDING = booleanPreferencesKey("has_seen_onboarding")
         val LANGUAGE_CODE = stringPreferencesKey("language_code")
     }
 
-    val settingsFlow: Flow<AppSettings> = ctx.ds.data.map { p ->
+    val settingsFlow: Flow<AppSettings> = dataStore.data.map { p ->
         AppSettings(
             useTrueNorth = p[Keys.USE_TRUE_NORTH] ?: true,
             smoothing = p[Keys.SMOOTHING] ?: 0.65f,
@@ -64,38 +65,82 @@ class SettingsRepository(private val ctx: Context) {
             mapType = p[Keys.MAP_TYPE] ?: 1,
             showIranCities = p[Keys.SHOW_IRAN_CITIES] ?: true,
             neonMapStyle = p[Keys.NEON_MAP_STYLE] ?: true,
-            themeMode = ThemeMode.entries.getOrElse(p[Keys.THEME_MODE] ?: 2) { ThemeMode.DARK },
-            accent = NeonAccent.entries.getOrElse(p[Keys.ACCENT_TYPE] ?: 0) { NeonAccent.GREEN },
+            themeMode = themeModeFromValue(p[Keys.THEME_MODE], p[Keys.LEGACY_THEME_MODE]),
+            accent = accentFromValue(p[Keys.ACCENT_TYPE], p[Keys.LEGACY_ACCENT_TYPE]),
             hasSeenOnboarding = p[Keys.HAS_SEEN_ONBOARDING] ?: false,
             languageCode = p[Keys.LANGUAGE_CODE] ?: "en"
         )
     }
 
-    suspend fun setUseTrueNorth(v: Boolean) = ctx.ds.edit { it[Keys.USE_TRUE_NORTH] = v }
-    suspend fun setSmoothing(v: Float) = ctx.ds.edit { it[Keys.SMOOTHING] = v.coerceIn(0f, 1f) }
-    suspend fun setAlignmentTolerance(v: Int) = ctx.ds.edit { it[Keys.ALIGN_TOL] = v.coerceIn(2, 20) }
+    suspend fun setUseTrueNorth(v: Boolean) = dataStore.edit { it[Keys.USE_TRUE_NORTH] = v }
+    suspend fun setSmoothing(v: Float) = dataStore.edit { it[Keys.SMOOTHING] = v.coerceIn(0f, 1f) }
+    suspend fun setAlignmentTolerance(v: Int) = dataStore.edit { it[Keys.ALIGN_TOL] = v.coerceIn(2, 20) }
 
-    suspend fun setShowGpsPrompt(v: Boolean) = ctx.ds.edit { it[Keys.SHOW_GPS_PROMPT] = v }
-    suspend fun setBatterySaver(v: Boolean) = ctx.ds.edit { it[Keys.BATTERY_SAVER] = v }
-    suspend fun setBgFreqSec(v: Int) = ctx.ds.edit { it[Keys.BG_FREQ_SEC] = v.coerceIn(2, 30) }
-    suspend fun setLowPowerLocation(v: Boolean) = ctx.ds.edit { it[Keys.LOW_POWER_LOC] = v }
+    suspend fun setShowGpsPrompt(v: Boolean) = dataStore.edit { it[Keys.SHOW_GPS_PROMPT] = v }
+    suspend fun setBatterySaver(v: Boolean) = dataStore.edit { it[Keys.BATTERY_SAVER] = v }
+    suspend fun setBgFreqSec(v: Int) = dataStore.edit { it[Keys.BG_FREQ_SEC] = v.coerceIn(2, 30) }
+    suspend fun setLowPowerLocation(v: Boolean) = dataStore.edit { it[Keys.LOW_POWER_LOC] = v }
 
-    suspend fun setAutoCalibration(v: Boolean) = ctx.ds.edit { it[Keys.AUTO_CALIB] = v }
-    suspend fun setCalibrationThreshold(v: Int) = ctx.ds.edit { it[Keys.CALIB_THRESHOLD] = v.coerceIn(1, 10) }
+    suspend fun setAutoCalibration(v: Boolean) = dataStore.edit { it[Keys.AUTO_CALIB] = v }
+    suspend fun setCalibrationThreshold(v: Int) = dataStore.edit { it[Keys.CALIB_THRESHOLD] = v.coerceIn(1, 10) }
 
-    suspend fun setVibration(v: Boolean) = ctx.ds.edit { it[Keys.ENABLE_VIBRATION] = v }
-    suspend fun setHapticStrength(v: Int) = ctx.ds.edit { it[Keys.HAPTIC_STRENGTH] = v.coerceIn(1, 3) }
-    suspend fun setHapticPattern(v: Int) = ctx.ds.edit { it[Keys.HAPTIC_PATTERN] = v.coerceIn(1, 3) }
-    suspend fun setHapticCooldown(v: Long) = ctx.ds.edit { it[Keys.HAPTIC_COOLDOWN] = v }
+    suspend fun setVibration(v: Boolean) = dataStore.edit { it[Keys.ENABLE_VIBRATION] = v }
+    suspend fun setHapticStrength(v: Int) = dataStore.edit { it[Keys.HAPTIC_STRENGTH] = v.coerceIn(1, 3) }
+    suspend fun setHapticPattern(v: Int) = dataStore.edit { it[Keys.HAPTIC_PATTERN] = v.coerceIn(1, 3) }
+    suspend fun setHapticCooldown(v: Long) = dataStore.edit { it[Keys.HAPTIC_COOLDOWN] = v }
 
-    suspend fun setSound(v: Boolean) = ctx.ds.edit { it[Keys.ENABLE_SOUND] = v }
+    suspend fun setSound(v: Boolean) = dataStore.edit { it[Keys.ENABLE_SOUND] = v }
 
-    suspend fun setMapType(v: Int) = ctx.ds.edit { it[Keys.MAP_TYPE] = v.coerceIn(1, 4) }
-    suspend fun setShowIranCities(v: Boolean) = ctx.ds.edit { it[Keys.SHOW_IRAN_CITIES] = v }
-    suspend fun setNeonMapStyle(v: Boolean) = ctx.ds.edit { it[Keys.NEON_MAP_STYLE] = v }
-    
-    suspend fun setThemeMode(mode: ThemeMode) = ctx.ds.edit { it[Keys.THEME_MODE] = mode.ordinal }
-    suspend fun setAccent(accent: NeonAccent) = ctx.ds.edit { it[Keys.ACCENT_TYPE] = accent.ordinal }
-    suspend fun setHasSeenOnboarding(v: Boolean) = ctx.ds.edit { it[Keys.HAS_SEEN_ONBOARDING] = v }
-    suspend fun setLanguageCode(v: String) = ctx.ds.edit { it[Keys.LANGUAGE_CODE] = v }
+    suspend fun setMapType(v: Int) = dataStore.edit { it[Keys.MAP_TYPE] = v.coerceIn(1, 4) }
+    suspend fun setShowIranCities(v: Boolean) = dataStore.edit { it[Keys.SHOW_IRAN_CITIES] = v }
+    suspend fun setNeonMapStyle(v: Boolean) = dataStore.edit { it[Keys.NEON_MAP_STYLE] = v }
+
+    suspend fun setThemeMode(mode: ThemeMode) = dataStore.edit {
+        it[Keys.THEME_MODE] = themeModeValue(mode)
+        it.remove(Keys.LEGACY_THEME_MODE)
+    }
+    suspend fun setAccent(accent: NeonAccent) = dataStore.edit {
+        it[Keys.ACCENT_TYPE] = accentValue(accent)
+        it.remove(Keys.LEGACY_ACCENT_TYPE)
+    }
+    suspend fun setHasSeenOnboarding(v: Boolean) = dataStore.edit { it[Keys.HAS_SEEN_ONBOARDING] = v }
+    suspend fun setLanguageCode(v: String) = dataStore.edit { it[Keys.LANGUAGE_CODE] = v }
+
+    private fun themeModeFromValue(value: String?, legacyValue: Int?): ThemeMode {
+        if (value != null) {
+            return when (value) {
+                "system" -> ThemeMode.SYSTEM
+                "light" -> ThemeMode.LIGHT
+                "dark" -> ThemeMode.DARK
+                else -> ThemeMode.DARK
+            }
+        }
+        return ThemeMode.entries.getOrElse(legacyValue ?: 2) { ThemeMode.DARK }
+    }
+
+    private fun themeModeValue(mode: ThemeMode): String = when (mode) {
+        ThemeMode.SYSTEM -> "system"
+        ThemeMode.LIGHT -> "light"
+        ThemeMode.DARK -> "dark"
+    }
+
+    private fun accentFromValue(value: String?, legacyValue: Int?): NeonAccent {
+        if (value != null) {
+            return when (value) {
+                "blue" -> NeonAccent.BLUE
+                "purple" -> NeonAccent.PURPLE
+                "pink" -> NeonAccent.PINK
+                "green" -> NeonAccent.GREEN
+                else -> NeonAccent.GREEN
+            }
+        }
+        return NeonAccent.entries.getOrElse(legacyValue ?: 0) { NeonAccent.GREEN }
+    }
+
+    private fun accentValue(accent: NeonAccent): String = when (accent) {
+        NeonAccent.GREEN -> "green"
+        NeonAccent.BLUE -> "blue"
+        NeonAccent.PURPLE -> "purple"
+        NeonAccent.PINK -> "pink"
+    }
 }

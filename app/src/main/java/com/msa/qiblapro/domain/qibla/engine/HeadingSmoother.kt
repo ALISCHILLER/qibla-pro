@@ -1,5 +1,7 @@
 package com.msa.qiblapro.domain.qibla.engine
 
+import com.msa.qiblapro.domain.qibla.AngleMath
+
 class HeadingSmoother(
     alpha: Float,
     initial: Float = 0f

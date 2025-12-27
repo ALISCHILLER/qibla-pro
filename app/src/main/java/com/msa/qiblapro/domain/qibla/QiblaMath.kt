@@ -43,7 +43,6 @@ object QiblaMath {
 
     // rotation error: how much user must rotate to align ([-180..180])
     fun rotationErrorDeg(currentHeading: Float, targetBearing: Float): Float {
-        val diff = ((targetBearing - currentHeading + 540f) % 360f) - 180f
-        return diff
+        return AngleMath.diffDeg(targetBearing, currentHeading)
     }
 }

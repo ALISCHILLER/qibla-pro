@@ -4,11 +4,14 @@ import android.app.Activity
 import android.content.IntentSender
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
-import com.google.android.gms.tasks.Tasks
+import com.google.android.gms.tasks.Task
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 object GpsResolver {
 
-    fun buildEnableLocationIntentSender(
+    suspend fun buildEnableLocationIntentSender(
         activity: Activity,
         highAccuracy: Boolean = true
     ): IntentSender? {
@@ -29,11 +32,16 @@ object GpsResolver {
         val task = client.checkLocationSettings(settingsReq)
 
         return try {
-            Tasks.await(task)
+            task.await()
             null
         } catch (e: Exception) {
             val ex = (e.cause ?: e)
             if (ex is ResolvableApiException) ex.resolution.intentSender else null
         }
     }
+}
+private suspend fun <T> Task<T>.await(): T = suspendCancellableCoroutine { cont ->
+    addOnSuccessListener { cont.resume(it) }
+    addOnFailureListener { cont.resumeWithException(it) }
+    addOnCanceledListener { cont.cancel() }
 }

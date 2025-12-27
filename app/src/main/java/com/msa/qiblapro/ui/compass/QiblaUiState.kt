@@ -29,6 +29,7 @@ data class QiblaUiState(
     val gpsEnabled: Boolean = true,
     val showGpsDialog: Boolean = false,
     val showGpsPrompt: Boolean = true,
+    val airplaneModeOn: Boolean = false,
 
     // ✅ Settings Mirror
     val useTrueNorth: Boolean = true,
