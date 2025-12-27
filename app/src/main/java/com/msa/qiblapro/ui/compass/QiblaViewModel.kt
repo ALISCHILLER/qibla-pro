@@ -13,6 +13,7 @@ import com.msa.qiblapro.data.location.LocationRepository
 import com.msa.qiblapro.data.location.UserLocationResult
 import com.msa.qiblapro.data.settings.AppSettings
 import com.msa.qiblapro.data.settings.SettingsRepository
+import com.msa.qiblapro.domain.qibla.AngleMath
 import com.msa.qiblapro.domain.qibla.QiblaMath
 import com.msa.qiblapro.domain.qibla.engine.QiblaEngine
 import com.msa.qiblapro.domain.qibla.engine.QiblaEngineInput
@@ -234,12 +235,18 @@ class QiblaViewModel @Inject constructor(
                         )
 
                         val out = engine.calculate(input)
-
+                        val headingTrue = if (_state.value.hasLocation) {
+                            if (input.useTrueNorth) out.headingDeg
+                            else AngleMath.norm360(out.headingDeg + _state.value.declinationDeg)
+                        } else {
+                            null
+                        }
                         handleHaptics(out.isFacing, s)
 
                         _state.update {
                             it.copy(
                                 headingDeg = out.headingDeg,
+                                headingTrue = headingTrue,
                                 rotationErrorDeg = out.rotationErrorDeg,
                                 isFacingQibla = out.isFacing,
                                 needsCalibration = out.needsCalibration,
@@ -299,14 +306,20 @@ class QiblaViewModel @Inject constructor(
     }
 
     private fun handleHaptics(isFacing: Boolean, s: AppSettings) {
-        if (!s.enableVibration) return
+        val canDoAnything = s.enableVibration || s.enableSound
+        if (!canDoAnything) return
 
         // edge trigger: فقط وقتی وارد حالت facing می‌شیم
         if (isFacing && !_state.value.isFacingQibla) {
             val now = System.currentTimeMillis()
             if (now - lastHapticTimeMs >= s.hapticCooldownMs) {
                 lastHapticTimeMs = now
-                _events.tryEmit(AppEvent.VibratePattern(s.hapticStrength, s.hapticPattern))
+                if (s.enableVibration) {
+                    _events.tryEmit(AppEvent.VibratePattern(s.hapticStrength, s.hapticPattern))
+                }
+                if (s.enableSound) {
+                    _events.tryEmit(AppEvent.Beep)
+                }
             }
         }
     }
@@ -372,6 +385,14 @@ class QiblaViewModel @Inject constructor(
     fun dismissCalibrationGuide() {
         calibrationGuideDismissedUntilMs = System.currentTimeMillis() + 10 * 60 * 1000
         _state.update { it.copy(showCalibrationGuide = false) }
+    }
+
+    fun hideCalibrationSheet() {
+        _state.update { it.copy(showCalibrationSheet = false) }
+    }
+
+    fun requestCalibrationGuide() {
+        _state.update { it.copy(showCalibrationGuide = true, showCalibrationSheet = false) }
     }
 
     fun hideGpsDialog() {

@@ -83,6 +83,12 @@ fun CompassScreen(
         CalibrationGuideSheet(onDismiss = { vm.dismissCalibrationGuide() })
     }
 
+    if (state.showCalibrationSheet) {
+        CalibrationQuickSheet(
+            onDismiss = { vm.hideCalibrationSheet() },
+            onOpenGuide = { vm.requestCalibrationGuide() }
+        )
+    }
     // GPS enable dialog
     GpsEnableDialog(
         visible = state.showGpsDialog,
@@ -176,7 +182,7 @@ private fun rememberAngleAnim(targetDeg: Float): Float {
         val delta = ((targetDeg - current + 540f) % 360f) - 180f
         anim.animateTo(
             targetValue = current + delta,
-            animationSpec = spring(dampingRatio = 0.85f, stiffness = 320f)
+            animationSpec = spring(dampingRatio = 0.9f, stiffness = 900f)
         )
     }
 

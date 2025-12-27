@@ -1,5 +1,7 @@
 package com.msa.qiblapro.util
 
+import android.text.TextUtils
+import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import java.util.Locale
@@ -7,61 +9,93 @@ import java.util.Locale
 object LanguageHelper {
 
     /**
-     * Normalize language tags to avoid mismatches:
-     * "fa" or "fa-IR" -> "fa"
-     * "en" or "en-US" -> "en"
-     * you can keep full tags if you want, but then compare tags consistently.
+     * نرمال‌سازی تگ زبان:
+     * - "system" نگه داشته می‌شود
+     * - "fa-IR" -> "fa"
+     * - "ar-SA" -> "ar"
+     * - اگر ناشناخته بود -> "en"
      */
-    fun normalizeLanguageTag(languageCode: String): String {
-        val trimmed = languageCode.trim().lowercase()
-        if (trimmed.isBlank()) return "en"
-        // you can choose to keep region; here we keep only base language
-        return trimmed.split("-", "_").first()
-    }
+    fun normalizeLanguageTag(input: String?): String {
+        val raw = input?.trim()?.lowercase().orEmpty()
+        if (raw.isBlank()) return "en"
+        if (raw == "system") return "system"
 
-    fun isRtlLanguage(languageCode: String): Boolean {
-        return normalizeLanguageTag(languageCode) in setOf("fa", "ar", "ur")
-    }
+        val base = raw
+            .replace('_', '-')
+            .split('-')
+            .firstOrNull()
+            .orEmpty()
 
-    /**
-     * Apply language to the whole app (resources + formatting).
-     * Note: Locale.setDefault helps number/date formatting.
-     */
-    fun applyLanguage(languageCode: String) {
-        val tag = normalizeLanguageTag(languageCode)
-
-        // 1) Default locale for formatting
-        val locale = Locale.forLanguageTag(tag)
-        Locale.setDefault(locale)
-
-        // 2) AppCompat per-app language (Android 13- and also support lib)
-        val appLocales = if (tag == "system") {
-            LocaleListCompat.getEmptyLocaleList()
-        } else {
-            LocaleListCompat.forLanguageTags(tag)
+        return when (base) {
+            "en" -> "en"
+            "fa" -> "fa"
+            "ar" -> "ar"
+            else -> "en"
         }
-        AppCompatDelegate.setApplicationLocales(appLocales)
     }
 
     /**
-     * Current language tag from AppCompat (per-app locales if set),
-     * otherwise falls back to system default.
+     * زبان فعلی اپ (همون چیزی که AppCompatDelegate ست کرده)
+     * اگر چیزی ست نشده باشد => "system"
      */
     fun getCurrentLanguageTag(): String {
-        val locales = AppCompatDelegate.getApplicationLocales()
-        val tag = if (!locales.isEmpty) {
-            locales[0]?.toLanguageTag()
-        } else {
-            Locale.getDefault().toLanguageTag()
-        } ?: "en"
-
-        return normalizeLanguageTag(tag)
+        val tags = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+        return if (tags.isNullOrBlank()) "system" else normalizeLanguageTag(tags)
     }
 
-    fun getFlagEmoji(lang: String): String = when (normalizeLanguageTag(lang)) {
-        "fa" -> "\uD83C\uDDEE\uD83C\uDDF7" // 🇮🇷
-        "ar" -> "\uD83C\uDDF8\uD83C\uDDE6" // 🇸🇦
-        "en" -> "\uD83C\uDDFA\uD83C\uDDF8" // 🇺🇸
-        else -> "🌐"
+    /**
+     * اعمال زبان در سطح اپ:
+     * - system => خالی کردن app locales (برگرد به زبان سیستم)
+     * - غیر از آن => ست کردن locale
+     */
+    fun applyLanguage(tag: String) {
+        val normalized = normalizeLanguageTag(tag)
+        if (normalized == "system") {
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
+        } else {
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(normalized))
+        }
+    }
+
+    /**
+     * RTL/LTR بر اساس زبان (fa/ar => RTL)
+     * اگر "system" باشد از Locale فعلی دستگاه استفاده می‌کند.
+     */
+    fun isRtlLanguage(tag: String): Boolean {
+        val normalized = normalizeLanguageTag(tag)
+
+        val locale = if (normalized == "system") {
+            Locale.getDefault()
+        } else {
+            Locale.forLanguageTag(normalized)
+        }
+
+        return TextUtils.getLayoutDirectionFromLocale(locale) == View.LAYOUT_DIRECTION_RTL
+    }
+
+    /**
+     * ایموجی پرچم بر اساس زبان:
+     * - fa => 🇮🇷
+     * - ar => 🇸🇦
+     * - en => 🇺🇸
+     * - system => 🌐 (یا بر اساس زبان سیستم)
+     */
+    fun getFlagEmoji(tag: String): String {
+        val normalized = normalizeLanguageTag(tag)
+
+        return when (normalized) {
+            "fa" -> "🇮🇷"
+            "ar" -> "🇸🇦"
+            "en" -> "🇺🇸"
+            "system" -> {
+                // اگر دوست داری، می‌تونی سیستم رو هم مپ کنی به پرچم مربوطه:
+                when (Locale.getDefault().language.lowercase()) {
+                    "fa" -> "🇮🇷"
+                    "ar" -> "🇸🇦"
+                    else -> "🌐"
+                }
+            }
+            else -> "🌐"
+        }
     }
 }

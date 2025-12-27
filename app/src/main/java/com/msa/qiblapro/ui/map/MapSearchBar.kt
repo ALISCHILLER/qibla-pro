@@ -5,16 +5,28 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationCity
 import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,11 +47,12 @@ internal fun MapSearchBar(
     isLocationAvailable: Boolean
 ) {
     val shape = RoundedCornerShape(24.dp)
+    val cs = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.75f), shape)
+            .background(cs.surface.copy(alpha = 0.80f), shape)
             .padding(horizontal = 4.dp)
     ) {
         TextField(
@@ -49,16 +62,15 @@ internal fun MapSearchBar(
             placeholder = {
                 Text(
                     text = stringResource(R.string.search_city_hint),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)
+                    color = cs.onSurface.copy(alpha = 0.55f)
                 )
             },
             leadingIcon = {
                 IconButton(onClick = onNearbyToggle, enabled = isLocationAvailable) {
                     Icon(
                         Icons.Default.NearMe,
-                        null,
-                        tint = if (isNearbyActive) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+                        contentDescription = null,
+                        tint = if (isNearbyActive) cs.primary else cs.onSurface.copy(alpha = 0.45f)
                     )
                 }
             },
@@ -68,17 +80,13 @@ internal fun MapSearchBar(
                         onQueryChange("")
                         if (isNearbyActive) onNearbyToggle()
                     }) {
-                        Icon(
-                            Icons.Default.Close, 
-                            null, 
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
-                        )
+                        Icon(Icons.Default.Close, null, tint = cs.onSurface.copy(alpha = 0.85f))
                     }
                 } else {
                     Icon(
-                        Icons.Default.Search, 
-                        null, 
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f), 
+                        Icons.Default.Search,
+                        null,
+                        tint = cs.onSurface.copy(alpha = 0.45f),
                         modifier = Modifier.padding(end = 8.dp)
                     )
                 }
@@ -88,9 +96,9 @@ internal fun MapSearchBar(
                 unfocusedContainerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = MaterialTheme.colorScheme.primary,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                cursorColor = cs.primary,
+                focusedTextColor = cs.onSurface,
+                unfocusedTextColor = cs.onSurface
             ),
             singleLine = true
         )
@@ -103,7 +111,7 @@ internal fun MapSearchBar(
                     .padding(bottom = 8.dp)
             ) {
                 items(results) { (city, dist) ->
-                    HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
+                    HorizontalDivider(color = cs.onSurface.copy(alpha = 0.08f))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -113,19 +121,19 @@ internal fun MapSearchBar(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Icon(
-                            Icons.Default.LocationCity, 
-                            null, 
-                            tint = Color.White.copy(alpha = 0.8f), 
+                            Icons.Default.LocationCity,
+                            null,
+                            tint = cs.onSurface.copy(alpha = 0.75f),
                             modifier = Modifier.size(20.dp)
                         )
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(city.nameFa, color = Color.White, style = MaterialTheme.typography.bodyLarge)
-                            Text(city.provinceFa, color = Color.White.copy(alpha = 0.6f), style = MaterialTheme.typography.bodySmall)
+                            Text(city.nameFa, color = cs.onSurface, style = MaterialTheme.typography.bodyLarge)
+                            Text(city.provinceFa, color = cs.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                         }
                         if (dist != null) {
                             Text(
                                 text = String.format("%.1f km", dist),
-                                color = MaterialTheme.colorScheme.primary,
+                                color = cs.primary,
                                 style = MaterialTheme.typography.labelMedium
                             )
                         }

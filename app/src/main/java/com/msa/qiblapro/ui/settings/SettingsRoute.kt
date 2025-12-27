@@ -1,9 +1,9 @@
 package com.msa.qiblapro.ui.settings
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun SettingsRoute(
@@ -11,7 +11,7 @@ fun SettingsRoute(
     onNavigateToAbout: () -> Unit
 ) {
 
-    val state by vm.state.collectAsState()
+    val state by vm.state.collectAsStateWithLifecycle()
 
 
     // ✅ نمایش صفحه تنظیمات
@@ -36,8 +36,10 @@ fun SettingsRoute(
                 is SettingsAction.SetSound           -> vm.setSound(action.v)
                 is SettingsAction.SetMapType         -> vm.setMapType(action.v)
                 is SettingsAction.SetIranCities      -> vm.setIranCities(action.v)
+                is SettingsAction.SetNeonMapStyle    -> vm.setNeonMapStyle(action.v)
                 is SettingsAction.SetThemeMode       -> vm.setThemeMode(action.mode)
                 is SettingsAction.SetAccent          -> vm.setAccent(action.accent)
+                SettingsAction.ResetToDefaults       -> vm.resetToDefaults()
                 SettingsAction.OpenAbout             -> onNavigateToAbout()
             }
         },

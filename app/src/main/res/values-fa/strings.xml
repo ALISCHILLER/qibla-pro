@@ -16,6 +16,7 @@
 
     <!-- Language -->
     <string name="language_label">زبان</string>
+    <string name="language_system">پیش‌فرض سیستم</string>
     <string name="language_en">انگلیسی</string>
     <string name="language_fa">فارسی</string>
     <string name="language_ar">عربی</string>
@@ -136,6 +137,12 @@
     <string name="map_type_satellite">ماهواره‌ای</string>
     <string name="map_type_terrain">توپوگرافی</string>
     <string name="map_type_hybrid">ترکیبی</string>
+
+    <string name="advanced_actions">پیشرفته</string>
+    <string name="reset_all_settings">بازنشانی همه تنظیمات</string>
+    <string name="reset_dialog_title">بازنشانی تنظیمات</string>
+    <string name="reset_dialog_message">آیا مطمئن هستید که می‌خواهید همه تنظیمات به حالت پیش‌فرض برگردند؟</string>
+    <string name="reset">بازنشانی</string>
 
     <string name="map_permission_title">عدم دسترسی به موقعیت</string>
     <string name="map_permission_body">نقشه برای نمایش مکان شما و مسیر تا کعبه به دسترسی نیاز دارد.</string>

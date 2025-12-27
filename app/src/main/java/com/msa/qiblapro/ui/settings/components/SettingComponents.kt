@@ -28,7 +28,7 @@ fun SettingCard(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = Color.Black.copy(alpha = 0.20f),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
         shape = MaterialTheme.shapes.extraLarge
@@ -71,6 +71,7 @@ fun IntSliderRow(
     step: Int = 1,
     label: @Composable (Int) -> String = { it.toString() },
     onValueChange: (Int) -> Unit,
+    onValueChangeFinished: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -102,6 +103,7 @@ fun IntSliderRow(
         Slider(
             value = value.toFloat(),
             onValueChange = { onValueChange(it.roundToInt().coerceIn(valueRange)) },
+            onValueChangeFinished = onValueChangeFinished,
             valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
             steps = stepsCount.coerceAtLeast(0)
         )

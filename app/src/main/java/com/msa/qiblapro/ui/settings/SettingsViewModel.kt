@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.msa.qiblapro.data.settings.NeonAccent
 import com.msa.qiblapro.data.settings.SettingsRepository
 import com.msa.qiblapro.data.settings.ThemeMode
+import com.msa.qiblapro.util.LanguageHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
@@ -33,7 +34,7 @@ data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.DARK,
     val accent: NeonAccent = NeonAccent.GREEN,
     val hasSeenOnboarding: Boolean = false,
-    val languageCode: String = "en"
+    val languageCode: String = "system"
 )
 
 @HiltViewModel
@@ -102,7 +103,8 @@ class SettingsViewModel @Inject constructor(
 
     fun setLanguage(langCode: String) {
         viewModelScope.launch {
-            repo.setLanguageCode(langCode)
+            repo.setLanguageCode(LanguageHelper.normalizeLanguageTag(langCode))
         }
     }
+    fun resetToDefaults() = update { resetToDefaults() }
 }

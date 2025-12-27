@@ -13,6 +13,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.msa.qiblapro.data.compass.CompassRepository
 import com.msa.qiblapro.data.location.LocationRepository
 import com.msa.qiblapro.data.settings.SettingsRepository
+import com.msa.qiblapro.data.settings.SettingsV1ToV2Migration
+import com.msa.qiblapro.ui.map.MapPerformanceManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,14 +26,15 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    @Provides @Singleton
+    @Provides
+    @Singleton
     fun provideFused(@ApplicationContext ctx: Context): FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(ctx)
 
-    @Provides @Singleton
+    @Provides
+    @Singleton
     fun provideSensorManager(@ApplicationContext ctx: Context): SensorManager =
         ctx.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-
 
     @Provides
     @Singleton
@@ -40,13 +43,18 @@ object AppModule {
             corruptionHandler = ReplaceFileCorruptionHandler(
                 produceNewData = { emptyPreferences() }
             ),
+            migrations = listOf(
+                SettingsV1ToV2Migration()
+            ),
             produceFile = { ctx.preferencesDataStoreFile("qibla_settings") }
         )
 
-    @Provides @Singleton
+    @Provides
+    @Singleton
     fun provideSettingsRepo(dataStore: DataStore<Preferences>) = SettingsRepository(dataStore)
 
-    @Provides @Singleton
+    @Provides
+    @Singleton
     fun provideLocationRepo(
         @ApplicationContext ctx: Context,
         fused: FusedLocationProviderClient,
@@ -59,4 +67,8 @@ object AppModule {
         @ApplicationContext ctx: Context,
         sm: SensorManager
     ): CompassRepository = CompassRepository(ctx, sm)
+
+    @Provides
+    @Singleton
+    fun provideMapPerformanceManager(@ApplicationContext ctx: Context) = MapPerformanceManager(ctx)
 }

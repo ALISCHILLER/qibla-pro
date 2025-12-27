@@ -12,7 +12,11 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
-import com.google.maps.android.compose.*
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.clustering.Clustering
 import com.msa.qiblapro.R
 import com.msa.qiblapro.util.IranCities
@@ -22,14 +26,15 @@ import kotlinx.coroutines.launch
 @SuppressLint("UnrememberedMutableState")
 @Composable
 internal fun MapMapContent(
-    cameraState: CameraPositionState,
+    cameraState: com.google.maps.android.compose.CameraPositionState,
     props: MapProperties,
     ui: MapUiSettings,
     qiblaIcon: State<BitmapDescriptor?>,
     userLatLng: LatLng?,
     showIranCities: Boolean,
     qiblaDeg: Float,
-    scope: CoroutineScope
+    scope: CoroutineScope,
+    mapConfig: MapConfig
 ) {
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
@@ -40,21 +45,37 @@ internal fun MapMapContent(
     ) {
         Marker(state = MarkerState(KAABA_LATLNG), title = stringResource(R.string.kaaba_title))
 
-        if (showIranCities) {
-            val clusterItems = remember {
-                IranCities.cities.map { CityClusterItem(it) }
+        val enableIranCities =
+            showIranCities &&
+                    cameraState.position.zoom >= mapConfig.iranCitiesMinZoom
+
+        if (enableIranCities) {
+            val items = remember(mapConfig.maxIranCityMarkers) {
+                IranCities.cities
+                    .take(mapConfig.maxIranCityMarkers)
+                    .map { CityClusterItem(it) }
             }
-            Clustering(
-                items = clusterItems,
-                onClusterClick = { cluster ->
-                    scope.launch {
-                        val builder = LatLngBounds.builder()
-                        cluster.items.forEach { builder.include(it.position) }
-                        cameraState.animate(CameraUpdateFactory.newLatLngBounds(builder.build(), 120))
+
+            if (mapConfig.clusteringEnabled) {
+                Clustering(
+                    items = items,
+                    onClusterClick = { cluster ->
+                        scope.launch {
+                            val builder = LatLngBounds.builder()
+                            cluster.items.forEach { builder.include(it.position) }
+                            cameraState.animate(CameraUpdateFactory.newLatLngBounds(builder.build(), 120))
+                        }
+                        true
                     }
-                    true
+                )
+            } else {
+                items.forEach { item ->
+                    Marker(
+                        state = MarkerState(item.position),
+                        title = item.title
+                    )
                 }
-            )
+            }
         }
 
         if (userLatLng != null) {

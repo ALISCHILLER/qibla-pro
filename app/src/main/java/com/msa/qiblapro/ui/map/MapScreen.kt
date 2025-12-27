@@ -2,11 +2,13 @@ package com.msa.qiblapro.ui.map
 
 import android.util.Log
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -17,6 +19,9 @@ import com.msa.qiblapro.R
 import com.msa.qiblapro.ui.compass.QiblaUiState
 import com.msa.qiblapro.util.IranCities
 import com.msa.qiblapro.util.IranCity
+import kotlin.math.abs
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Composable
@@ -34,8 +39,9 @@ internal fun MapScreen(
     }
 
     val qiblaIcon = remember { mutableStateOf<BitmapDescriptor?>(null) }
-    LaunchedEffect(Unit) {
+    DisposableEffect(Unit) {
         qiblaIcon.value = bitmapDescriptorFromVector(context, R.drawable.ic_qibla_direction)
+        onDispose { qiblaIcon.value = null }
     }
 
     val mapType = when (st.mapType) {
@@ -46,8 +52,11 @@ internal fun MapScreen(
         else -> MapType.NORMAL
     }
 
-    val mapStyle = remember(st.neonMapStyle) {
-        if (st.neonMapStyle) MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style_neon_night)
+    val isDarkUi = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val mapStyle = remember(st.neonMapStyle, isDarkUi) {
+        if (st.neonMapStyle && isDarkUi) {
+            MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style_neon_night)
+        }
         else null
     }
 
@@ -82,29 +91,52 @@ internal fun MapScreen(
             mapToolbarEnabled = false
         )
     }
+    val mapConfig = remember { MapPerformanceManager(context).getConfig() }
 
     var searchQuery by rememberSaveable { mutableStateOf("") }
+    var debouncedQuery by rememberSaveable { mutableStateOf("") }
     var isNearbyMode by rememberSaveable { mutableStateOf(false) }
 
-    val displayResults: List<Pair<IranCity, Double?>> = remember(searchQuery, isNearbyMode, userLatLng) {
-        when {
-            isNearbyMode && userLatLng != null -> {
-                IranCities.cities
-                    .map { it to haversineKm(userLatLng.latitude, userLatLng.longitude, it.lat, it.lon) }
-                    .sortedBy { it.second }
-                    .take(8)
+    LaunchedEffect(Unit) {
+        snapshotFlow { searchQuery }
+            .debounce(300)
+            .collectLatest { debouncedQuery = it }
+    }
+
+    val displayResults by remember(debouncedQuery, isNearbyMode, userLatLng) {
+        derivedStateOf {
+            when {
+                isNearbyMode && userLatLng != null -> {
+                    val lat = userLatLng.latitude
+                    val lon = userLatLng.longitude
+                    val candidates = IranCities.cities
+                        .filter { abs(it.lat - lat) <= 2.5 && abs(it.lon - lon) <= 2.5 }
+                        .ifEmpty { IranCities.cities }
+
+                    candidates
+                        .map { city ->
+                            val key = "${lat},${lon}|${city.lat},${city.lon}"
+                            val dist = CalculationCache.getDistance(key) {
+                                haversineKm(lat, lon, city.lat, city.lon)
+                            }
+                            city to dist
+                        }
+                        .sortedBy { it.second }
+                        .take(8)
+                }
+                debouncedQuery.isNotBlank() -> {
+                    IranCities.cities
+                        .filter {
+                            it.nameFa.contains(debouncedQuery, ignoreCase = true) ||
+                                    it.nameEn.contains(debouncedQuery, ignoreCase = true) ||
+                                    it.provinceFa.contains(debouncedQuery, ignoreCase = true)
+                        }
+                        .map { it to null }
+                        .take(10)
+                }
+                else -> emptyList()
             }
-            searchQuery.isNotBlank() -> {
-                IranCities.cities
-                    .filter {
-                        it.nameFa.contains(searchQuery, ignoreCase = true) ||
-                                it.nameEn.contains(searchQuery, ignoreCase = true) ||
-                                it.provinceFa.contains(searchQuery, ignoreCase = true)
-                    }
-                    .map { it to null }
-                    .take(5)
-            }
-            else -> emptyList()
+
         }
     }
 
@@ -117,7 +149,8 @@ internal fun MapScreen(
             userLatLng = userLatLng,
             showIranCities = st.showIranCities,
             qiblaDeg = st.qiblaDeg,
-            scope = scope
+            scope = scope,
+            mapConfig = mapConfig
         )
 
         Column(

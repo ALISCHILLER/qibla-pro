@@ -1,13 +1,15 @@
 package com.msa.qiblapro.ui.settings.sections
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.msa.qiblapro.R
+import com.msa.qiblapro.ui.settings.SettingsUiState
 import com.msa.qiblapro.ui.settings.components.IntSliderRow
 import com.msa.qiblapro.ui.settings.components.SectionHeader
 import com.msa.qiblapro.ui.settings.components.SettingCard
-import com.msa.qiblapro.ui.settings.SettingsUiState
 import com.msa.qiblapro.ui.settings.components.SwitchRow
 import com.msa.qiblapro.util.haptics.Haptics
 
@@ -22,7 +24,10 @@ fun HapticSection(
 ) {
     val context = LocalContext.current
 
-    SectionHeader(stringResource(R.string.feedback_section_title))
+    SectionHeader(
+        icon = Icons.Filled.Vibration,
+        title = stringResource(R.string.feedback_section_title)
+    )
 
     SettingCard {
         SwitchRow(
@@ -39,9 +44,9 @@ fun HapticSection(
                 value = state.hapticStrength,
                 valueRange = 1..3,
                 label = { hapticStrengthLabel(it) },
-                onValueChange = {
-                    onHapticStrength(it)
-                    Haptics.vibrate(context, it, state.hapticPattern)
+                onValueChange = { onHapticStrength(it) },
+                onValueChangeFinished = {
+                    Haptics.vibrate(context, state.hapticStrength, state.hapticPattern)
                 }
             )
 
@@ -51,9 +56,9 @@ fun HapticSection(
                 value = state.hapticPattern,
                 valueRange = 1..3,
                 label = { hapticPatternLabel(it) },
-                onValueChange = {
-                    onHapticPattern(it)
-                    Haptics.vibrate(context, state.hapticStrength, it)
+                onValueChange = { onHapticPattern(it) },
+                onValueChangeFinished = {
+                    Haptics.vibrate(context, state.hapticStrength, state.hapticPattern)
                 }
             )
 

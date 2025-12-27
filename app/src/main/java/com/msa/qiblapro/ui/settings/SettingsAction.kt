@@ -20,11 +20,12 @@ sealed interface SettingsAction {
     data class SetSound(val v: Boolean) : SettingsAction
     data class SetMapType(val v: Int) : SettingsAction
     data class SetIranCities(val v: Boolean) : SettingsAction
+    data class SetNeonMapStyle(val v: Boolean) : SettingsAction
     data class SetThemeMode(val mode: ThemeMode) : SettingsAction
     data class SetAccent(val accent: NeonAccent) : SettingsAction
 
-    // ✅ تنها اکشن زبان
     data class SetLanguage(val langCode: String) : SettingsAction
 
+    data object ResetToDefaults : SettingsAction
     data object OpenAbout : SettingsAction
 }

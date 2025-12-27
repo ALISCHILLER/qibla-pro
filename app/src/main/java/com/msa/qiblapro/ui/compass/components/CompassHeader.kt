@@ -1,6 +1,8 @@
 package com.msa.qiblapro.ui.compass.components
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,7 +13,6 @@ import com.msa.qiblapro.util.LanguageHelper
 
 @Composable
 fun CompassHeader(languageLabel: String) {
-    // getCurrentLanguage() اکنون نیازی به context ندارد و کاملاً Reactive است
     val currentLangCode = LanguageHelper.getCurrentLanguageTag()
     val currentFlag = LanguageHelper.getFlagEmoji(currentLangCode)
 

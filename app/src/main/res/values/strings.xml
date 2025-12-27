@@ -16,6 +16,7 @@
 
     <!-- Language -->
     <string name="language_label">Language</string>
+    <string name="language_system">System</string>
     <string name="language_en">English</string>
     <string name="language_fa">Persian</string>
     <string name="language_ar">Arabic</string>
@@ -136,6 +137,12 @@
     <string name="map_type_satellite">Satellite</string>
     <string name="map_type_terrain">Terrain</string>
     <string name="map_type_hybrid">Hybrid</string>
+
+    <string name="advanced_actions">Advanced</string>
+    <string name="reset_all_settings">Reset all settings</string>
+    <string name="reset_dialog_title">Reset settings</string>
+    <string name="reset_dialog_message">Are you sure you want to reset all settings to defaults?</string>
+    <string name="reset">Reset</string>
 
     <string name="map_permission_title">No location permission</string>
     <string name="map_permission_body">Map needs location access to show your position and the route to Kaaba.</string>

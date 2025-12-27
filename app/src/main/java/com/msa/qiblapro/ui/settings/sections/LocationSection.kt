@@ -10,6 +10,7 @@ import com.msa.qiblapro.R
 import com.msa.qiblapro.ui.pro.AppCard
 import com.msa.qiblapro.ui.settings.SettingsAction
 import com.msa.qiblapro.ui.settings.SettingsUiState
+import com.msa.qiblapro.ui.settings.components.ProIntSliderRow
 import com.msa.qiblapro.ui.settings.components.ProSwitchRow
 import com.msa.qiblapro.ui.settings.components.SectionHeader
 
@@ -36,6 +37,21 @@ fun LocationSection(
             subtitle = stringResource(R.string.low_power_location_desc),
             checked = state.useLowPowerLocation,
             onCheckedChange = { onAction(SettingsAction.SetLowPowerLoc(it)) }
+        )
+        ProSwitchRow(
+            title = stringResource(R.string.battery_saver_mode),
+            subtitle = stringResource(R.string.battery_saver_desc),
+            checked = state.batterySaverMode,
+            onCheckedChange = { onAction(SettingsAction.SetBatterySaver(it)) }
+        )
+
+        ProIntSliderRow(
+            title = stringResource(R.string.bg_update_frequency),
+            subtitle = stringResource(R.string.bg_update_frequency_desc),
+            value = state.bgUpdateFreqSec,
+            range = 2..30,
+            valueText = "${state.bgUpdateFreqSec}s",
+            onValueChange = { onAction(SettingsAction.SetBgUpdateFreq(it)) }
         )
     }
 }

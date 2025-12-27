@@ -34,6 +34,7 @@ fun LanguageSection(
         Spacer(Modifier.height(8.dp))
 
         val langs = listOf(
+            "system" to R.string.language_system,
             "en" to R.string.language_en,
             "fa" to R.string.language_fa,
             "ar" to R.string.language_ar

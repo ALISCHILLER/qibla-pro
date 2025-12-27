@@ -15,6 +15,10 @@
 
     <!-- Language -->
     <string name="language_label">اللغة</string>
+    <string name="language_system">لغة النظام</string>
+    <string name="language_en">الإنجليزية</string>
+    <string name="language_fa">الفارسية</string>
+    <string name="language_ar">العربية</string>
 
     <!-- Permission -->
     <string name="permission_title">إذن الموقع</string>
@@ -106,6 +110,8 @@
     <string name="map_section_title">الخريطة</string>
     <string name="show_iran_cities_title">عرض مدن إيران</string>
     <string name="show_iran_cities_desc">إبراز المدن الرئيسية في إيران على الخريطة</string>
+    <string name="neon_map_style_title">نمط نيون</string>
+    <string name="neon_map_style_desc">نمط ليلي سايبربانك للخريطة</string>
 
     <string name="map_type_title">نمط الخريطة</string>
     <string name="map_type_desc">اختيار بين خريطة عادية، قمر صناعي، أو تضاريس</string>
@@ -114,4 +120,11 @@
     <string name="map_type_satellite">قمر صناعي</string>
     <string name="map_type_terrain">تضاريس</string>
     <string name="map_type_hybrid">هجينة</string>
+
+    <string name="advanced_actions">خيارات متقدمة</string>
+    <string name="reset_all_settings">إعادة ضبط جميع الإعدادات</string>
+    <string name="reset_dialog_title">إعادة ضبط الإعدادات</string>
+    <string name="reset_dialog_message">هل تريد بالتأكيد إعادة جميع الإعدادات إلى الوضع الافتراضي؟</string>
+    <string name="reset">إعادة ضبط</string>
+
 </resources>

@@ -24,5 +24,5 @@ data class AppSettings(
     val themeMode: ThemeMode = ThemeMode.DARK,
     val accent: NeonAccent = NeonAccent.GREEN,
     val hasSeenOnboarding: Boolean = false,
-    val languageCode: String = "en"
+    val languageCode: String = "system"
 )

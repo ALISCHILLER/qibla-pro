@@ -157,11 +157,19 @@ class CompassRepository(
         }
 
     private fun selectRotationSensor(): Sensor? {
-        return listOf(
-            sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR),
-            sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-            sensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
-        ).firstOrNull { it != null }
+        val rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        val geomagneticVector = sensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
+        val gameRotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR)
+
+        return when {
+            rotationVector != null -> rotationVector
+            geomagneticVector != null -> geomagneticVector
+            gameRotationVector != null -> {
+                Log.w("CompassRepository", "Using GAME_ROTATION_VECTOR (may drift).")
+                gameRotationVector
+            }
+            else -> null
+        }
     }
 
     private fun lowPassFilter(input: FloatArray, output: FloatArray, alpha: Float) {
