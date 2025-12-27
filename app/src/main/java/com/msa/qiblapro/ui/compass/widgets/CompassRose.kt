@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,13 +35,13 @@ fun CompassRose(
     headingDeg: Float,
     qiblaDeg: Float,
     isFacingQibla: Boolean,
+    isReady: Boolean = true, // ✅ پارامتر جدید برای پایداری
     needleModifier: Modifier = Modifier,
     onRefresh: (() -> Unit)? = null
 ) {
     val measurer = rememberTextMeasurer()
     val colorScheme = MaterialTheme.colorScheme
 
-    // Localized labels
     val nLabel = stringResource(R.string.north_short)
     val eLabel = stringResource(R.string.east_short)
     val sLabel = stringResource(R.string.south_short)
@@ -56,9 +57,9 @@ fun CompassRose(
             val h = size.height
             val cx = w / 2f
             val cy = h / 2f
-            val radius = min(w, h) * 0.44f // Slightly smaller to fit indicators
+            val radius = min(w, h) * 0.44f
 
-            // 1) Background with Theme Colors
+            // 1) Background
             val bgBrush = Brush.radialGradient(
                 colors = listOf(colorScheme.surfaceVariant, colorScheme.surface),
                 center = Offset(cx, cy),
@@ -93,39 +94,36 @@ fun CompassRose(
                     )
                 }
 
-                // 3) Qibla Marker
-                val qiblaRad = Math.toRadians(qiblaDeg.toDouble() - 90).toFloat()
-                val qx = cx + cos(qiblaRad) * radius * 0.80f
-                val qy = cy + sin(qiblaRad) * radius * 0.80f
-                val qiblaCenter = Offset(qx, qy)
+                // 3) Qibla Marker (فقط وقتی آماده بود نمایش داده شود)
+                if (isReady) {
+                    val qiblaRad = Math.toRadians(qiblaDeg.toDouble() - 90).toFloat()
+                    val qx = cx + cos(qiblaRad) * radius * 0.80f
+                    val qy = cy + sin(qiblaRad) * radius * 0.80f
+                    val qiblaCenter = Offset(qx, qy)
 
-                if (isFacingQibla) {
-                    drawCircle(
-                        brush = Brush.radialGradient(
-                            colors = listOf(colorScheme.primary.copy(0.4f), Color.Transparent),
-                            center = qiblaCenter,
-                            radius = radius * 0.3f
-                        ),
-                        radius = radius * 0.3f,
-                        center = qiblaCenter
+                    if (isFacingQibla) {
+                        drawCircle(
+                            brush = Brush.radialGradient(
+                                colors = listOf(colorScheme.primary.copy(0.4f), Color.Transparent),
+                                center = qiblaCenter,
+                                radius = radius * 0.3f
+                            ),
+                            radius = radius * 0.3f,
+                            center = qiblaCenter
+                        )
+                    }
+
+                    drawLine(
+                        color = colorScheme.primary,
+                        start = Offset(cx, cy),
+                        end = qiblaCenter,
+                        strokeWidth = 6f,
+                        cap = StrokeCap.Round
                     )
                 }
 
-                drawLine(
-                    color = colorScheme.primary,
-                    start = Offset(cx, cy),
-                    end = qiblaCenter,
-                    strokeWidth = 6f,
-                    cap = StrokeCap.Round
-                )
-
-                // 4) Direction Labels (N, E, S, W)
-                val labels = listOf(
-                    nLabel to 0f,
-                    eLabel to 90f,
-                    sLabel to 180f,
-                    wLabel to 270f
-                )
+                // 4) Direction Labels
+                val labels = listOf(nLabel to 0f, eLabel to 90f, sLabel to 180f, wLabel to 270f)
                 labels.forEach { (text, angle) ->
                     val angleRad = Math.toRadians(angle.toDouble() - 90).toFloat()
                     val lx = cx + cos(angleRad) * radius * 0.68f
@@ -138,27 +136,36 @@ fun CompassRose(
                             color = if (angle == 0f) colorScheme.error else colorScheme.onSurface
                         )
                     )
-                    // Keep text upright
                     rotate(degrees = headingDeg, pivot = Offset(lx, ly)) {
-                        drawText(
-                            layout,
-                            topLeft = Offset(lx - layout.size.width / 2f, ly - layout.size.height / 2f)
-                        )
+                        drawText(layout, topLeft = Offset(lx - layout.size.width / 2f, ly - layout.size.height / 2f))
                     }
                 }
             }
 
-            // 5) Fixed Heading Indicator (Points to the head of the phone)
+            // 5) Fixed Heading Indicator
             val indicatorPath = Path().apply {
                 moveTo(cx, cy - radius - 10.dp.toPx())
                 lineTo(cx - 8.dp.toPx(), cy - radius + 10.dp.toPx())
                 lineTo(cx + 8.dp.toPx(), cy - radius + 10.dp.toPx())
                 close()
             }
-            drawPath(
-                path = indicatorPath,
-                color = colorScheme.primary
-            )
+            drawPath(path = indicatorPath, color = colorScheme.primary)
+        }
+
+        // نمایش پیام در حال پایداری
+        if (!isReady) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(colorScheme.surface.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "...", // یا متنی مثل "در حال پایداری"
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = colorScheme.primary
+                )
+            }
         }
 
         if (onRefresh != null) {

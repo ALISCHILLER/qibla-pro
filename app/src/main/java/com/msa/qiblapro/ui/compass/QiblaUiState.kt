@@ -2,6 +2,7 @@ package com.msa.qiblapro.ui.compass
 
 import com.msa.qiblapro.data.settings.NeonAccent
 import com.msa.qiblapro.data.settings.ThemeMode
+import kotlin.math.abs
 
 data class QiblaUiState(
     val hasLocationPermission: Boolean = false,
@@ -13,6 +14,10 @@ data class QiblaUiState(
 
     val headingDeg: Float = 0f,
     val headingTrue: Float? = null,
+    
+    // مقادیر کمکی برای تشخیص پایداری قطب‌نما
+    val lastHeadingDeg: Float = 0f,
+    val compassStabilityScore: Float = 0f, // 0 to 1
 
     val qiblaBearingDeg: Float = 0f,
     val distanceKm: Double = 0.0,
@@ -47,7 +52,6 @@ data class QiblaUiState(
     val accent: NeonAccent = NeonAccent.GREEN,
     val languageCode: String = "system",
 
-    // ✅ اضافه‌شده‌های ضروری برای رفع خطا
     val autoCalibration: Boolean = true,
     val calibrationThreshold: Int = 3,
     val batterySaverMode: Boolean = false
@@ -55,7 +59,9 @@ data class QiblaUiState(
     val accuracyLabel: String
         get() = locationAccuracyM?.let { "${it.toInt()} m" } ?: "—"
 
-    // Aliases for compatibility with existing UI code
+    // قبله فقط زمانی نمایش داده شود که قطب‌نما کمی پایدار شده باشد
+    val isCompassReady: Boolean get() = isSensorAvailable && compassStabilityScore > 0.4f
+
     val qiblaDeg: Float get() = qiblaBearingDeg
     val lat: Double? get() = userLat
     val lon: Double? get() = userLon

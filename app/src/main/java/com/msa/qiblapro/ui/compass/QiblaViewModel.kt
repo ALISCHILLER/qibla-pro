@@ -46,6 +46,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.abs
 
 @HiltViewModel
 class QiblaViewModel @Inject constructor(
@@ -66,10 +67,6 @@ class QiblaViewModel @Inject constructor(
     private val compassRestart = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private val engine = QiblaEngine()
 
-    /**
-     * ✅ settingsState را از settingsFlow می‌گیریم، و distinct را قبل از stateIn اعمال می‌کنیم
-     * تا هم درست باشد، هم warning ندهد.
-     */
     private val settingsState = settingsRepo.settingsFlow
         .distinctUntilChanged()
         .stateIn(
@@ -95,28 +92,20 @@ class QiblaViewModel @Inject constructor(
                     it.copy(
                         themeMode = s.themeMode,
                         accent = s.accent,
-
-                        // engine-related
                         useTrueNorth = s.useTrueNorth,
                         smoothing = s.smoothing,
                         alignTolerance = s.alignmentToleranceDeg,
                         autoCalibration = s.autoCalibration,
                         calibrationThreshold = s.calibrationThreshold,
                         batterySaverMode = s.batterySaverMode,
-
-                        // feedback
                         enableVibration = s.enableVibration,
                         hapticStrength = s.hapticStrength,
                         hapticPattern = s.hapticPattern,
                         hapticCooldownMs = s.hapticCooldownMs,
                         enableSound = s.enableSound,
-
-                        // map
                         mapType = s.mapType,
                         showIranCities = s.showIranCities,
                         neonMapStyle = s.neonMapStyle,
-
-                        // ui
                         showGpsPrompt = s.showGpsPrompt,
                         languageCode = s.languageCode
                     )
@@ -225,7 +214,6 @@ class QiblaViewModel @Inject constructor(
                             rawHeadingDeg = reading.headingMagneticDeg,
                             qiblaBearingDeg = _state.value.qiblaBearingDeg,
                             declinationDeg = _state.value.declinationDeg,
-                            // ✅ True North فقط وقتی location داریم معنی داره
                             useTrueNorth = s.useTrueNorth && _state.value.hasLocation,
                             smoothingFactor = s.smoothing,
                             alignmentTolerance = s.alignmentToleranceDeg,
@@ -241,14 +229,26 @@ class QiblaViewModel @Inject constructor(
                         } else {
                             null
                         }
-                        handleHaptics(out.isFacing, s)
+                        
+                        // محاسبه امتیاز پایداری (هرچه تغییرات کمتر، پایداری بیشتر)
+                        val diff = abs(AngleMath.diffDeg(out.headingDeg, _state.value.headingDeg))
+                        val currentStability = _state.value.compassStabilityScore
+                        val newStability = if (diff < 2f) {
+                            (currentStability + 0.1f).coerceAtMost(1.0f)
+                        } else {
+                            (currentStability - 0.2f).coerceAtLeast(0.0f)
+                        }
+
+                        handleHaptics(out.isFacing && _state.value.isCompassReady, s)
 
                         _state.update {
                             it.copy(
                                 headingDeg = out.headingDeg,
                                 headingTrue = headingTrue,
+                                lastHeadingDeg = it.headingDeg,
+                                compassStabilityScore = newStability,
                                 rotationErrorDeg = out.rotationErrorDeg,
-                                isFacingQibla = out.isFacing,
+                                isFacingQibla = out.isFacing && newStability > 0.4f,
                                 needsCalibration = out.needsCalibration,
                                 showCalibrationGuide = out.needsCalibration &&
                                         System.currentTimeMillis() >= calibrationGuideDismissedUntilMs,
@@ -298,7 +298,6 @@ class QiblaViewModel @Inject constructor(
             addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED)
         }
 
-        // اولین مقدار
         trySend(GpsUtils.isLocationEnabled(appCtx) to GpsUtils.isAirplaneModeOn(appCtx))
 
         appCtx.registerReceiver(receiver, filter)
@@ -309,7 +308,6 @@ class QiblaViewModel @Inject constructor(
         val canDoAnything = s.enableVibration || s.enableSound
         if (!canDoAnything) return
 
-        // edge trigger: فقط وقتی وارد حالت facing می‌شیم
         if (isFacing && !_state.value.isFacingQibla) {
             val now = System.currentTimeMillis()
             if (now - lastHapticTimeMs >= s.hapticCooldownMs) {
@@ -329,33 +327,23 @@ class QiblaViewModel @Inject constructor(
             when (action) {
                 is SettingsAction.SetThemeMode -> settingsRepo.setThemeMode(action.mode)
                 is SettingsAction.SetAccent -> settingsRepo.setAccent(action.accent)
-
-                is SettingsAction.SetLanguage -> {
-                    val target = LanguageHelper.normalizeLanguageTag(action.langCode)
-                    settingsRepo.setLanguageCode(target)
-                }
-
+                is SettingsAction.SetLanguage -> settingsRepo.setLanguageCode(LanguageHelper.normalizeLanguageTag(action.langCode))
                 is SettingsAction.SetUseTrueNorth -> settingsRepo.setUseTrueNorth(action.v)
                 is SettingsAction.SetSmoothing -> settingsRepo.setSmoothing(action.v)
                 is SettingsAction.SetAlignmentTol -> settingsRepo.setAlignmentTolerance(action.v)
-
                 is SettingsAction.SetVibration -> settingsRepo.setVibration(action.v)
                 is SettingsAction.SetHapticStrength -> settingsRepo.setHapticStrength(action.v)
                 is SettingsAction.SetHapticPattern -> settingsRepo.setHapticPattern(action.v)
                 is SettingsAction.SetHapticCooldown -> settingsRepo.setHapticCooldown(action.v)
                 is SettingsAction.SetSound -> settingsRepo.setSound(action.v)
-
                 is SettingsAction.SetMapType -> settingsRepo.setMapType(action.v)
                 is SettingsAction.SetIranCities -> settingsRepo.setShowIranCities(action.v)
-
                 is SettingsAction.SetShowGpsPrompt -> settingsRepo.setShowGpsPrompt(action.v)
                 is SettingsAction.SetBatterySaver -> settingsRepo.setBatterySaver(action.v)
                 is SettingsAction.SetBgUpdateFreq -> settingsRepo.setBgFreqSec(action.v)
                 is SettingsAction.SetLowPowerLoc -> settingsRepo.setLowPowerLocation(action.v)
-
                 is SettingsAction.SetAutoCalib -> settingsRepo.setAutoCalibration(action.v)
                 is SettingsAction.SetCalibThreshold -> settingsRepo.setCalibrationThreshold(action.v)
-
                 else -> Unit
             }
         }

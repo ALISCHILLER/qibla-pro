@@ -1,5 +1,8 @@
 <resources>
-    <style name="Theme.QiblaPro" parent="android:Theme.Material.NoActionBar">
+    <!-- تم اصلی اپلیکیشن: باید از AppCompat باشد تا با AppCompatActivity سازگار باشد -->
+    <style name="Theme.QiblaPro" parent="Theme.AppCompat.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 </resources>

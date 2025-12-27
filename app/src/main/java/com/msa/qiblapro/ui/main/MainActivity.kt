@@ -1,8 +1,6 @@
 package com.msa.qiblapro.ui.main
 
-import android.content.res.Configuration
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.CompositionLocalProvider
@@ -22,7 +20,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,14 +38,12 @@ class MainActivity : ComponentActivity() {
 
                 if (target != current) {
                     LanguageHelper.applyLanguage(target)
-                    // No need to call recreate() manually as AppCompatDelegate handles it,
-                    // but we ensure target is applied to avoid loops.
                 }
             }
 
             val isRtl = LanguageHelper.isRtlLanguage(state.languageCode)
             
-            // Force Locale for current context to ensure strings are updated correctly
+            // Force Locale for current context
             val locale = remember(state.languageCode) {
                 val tag = LanguageHelper.normalizeLanguageTag(state.languageCode)
                 if (tag == "system") Locale.getDefault() else Locale.forLanguageTag(tag)
