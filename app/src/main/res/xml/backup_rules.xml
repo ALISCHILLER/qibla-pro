@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
+    <!-- اصلاح دامنه‌های مجاز برای بک‌آپ -->
     <exclude domain="database" path="."/>
-    <exclude domain="file" path="."/>
-    <exclude domain="cache" path="."/>
+    <exclude domain="sharedpref" path="."/>
+    <!-- دامنه cache در اینجا مجاز نیست چون اندروید خودش کش را بک‌آپ نمی‌گیرد -->
 </full-backup-content>

@@ -5,11 +5,8 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.hardware.display.DisplayManager
-import android.view.Display
 import android.view.Surface
 import android.view.WindowManager
-import android.os.Build
 import android.util.Log
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -32,20 +29,13 @@ class CompassRepository(
     private val sensorManager: SensorManager
 ) {
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    private val accelMagFilterAlpha = 0.8f
+    private val accelMagFilterAlpha = 0.85f // کمی نرم‌تر برای پایداری بیشتر
+
     fun compassFlow(sensorDelay: Int = SensorManager.SENSOR_DELAY_GAME): Flow<CompassResult> =
         callbackFlow {
             val rotationSensor = selectRotationSensor()
-            val accelerometer = if (rotationSensor == null) {
-                sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-            } else {
-                null
-            }
-            val magnetometer = if (rotationSensor == null) {
-                sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
-            } else {
-                null
-            }
+            val accelerometer = if (rotationSensor == null) sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) else null
+            val magnetometer = if (rotationSensor == null) sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) else null
 
             val rotationMatrix = FloatArray(9)
             val outRotationMatrix = FloatArray(9)
@@ -53,13 +43,8 @@ class CompassRepository(
             val gravity = FloatArray(3)
             val geomagnetic = FloatArray(3)
 
-
-            val minEmitIntervalMs = when (sensorDelay) {
-                SensorManager.SENSOR_DELAY_FASTEST -> 16L
-                SensorManager.SENSOR_DELAY_UI -> 80L
-                else -> 40L
-            }
             var lastEmitMs = 0L
+            val minEmitIntervalMs = 30L // حداکثر ۳۳ هرتز برای جلوگیری از سربار
 
             val listener = object : SensorEventListener {
                 override fun onSensorChanged(event: SensorEvent) {
@@ -67,21 +52,13 @@ class CompassRepository(
                     if (now - lastEmitMs < minEmitIntervalMs) return
 
                     var heading = -1f
-                    val rotation = getDisplayRotation()
+                    val displayRotation = getDisplayRotation()
 
                     when (event.sensor.type) {
                         Sensor.TYPE_ROTATION_VECTOR,
-                        Sensor.TYPE_GAME_ROTATION_VECTOR,
                         Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR -> {
                             SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
-                            remapAndGetHeading(
-                                rotation,
-                                rotationMatrix,
-                                outRotationMatrix,
-                                orientation
-                            )?.let {
-                                heading = it
-                            }
+                            heading = calculateHeading(displayRotation, rotationMatrix, outRotationMatrix, orientation)
                         }
 
                         Sensor.TYPE_ACCELEROMETER -> {
@@ -93,39 +70,16 @@ class CompassRepository(
                         }
                     }
 
+                    // Fallback برای گوشی‌های قدیمی‌تر
                     if (rotationSensor == null && gravity[0] != 0f && geomagnetic[0] != 0f) {
-                        if (SensorManager.getRotationMatrix(
-                                rotationMatrix,
-                                null,
-                                gravity,
-                                geomagnetic
-                            )
-                        ) {
-                            remapAndGetHeading(
-                                rotation,
-                                rotationMatrix,
-                                outRotationMatrix,
-                                orientation
-                            )?.let {
-                                heading = it
-                            }
+                        if (SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic)) {
+                            heading = calculateHeading(displayRotation, rotationMatrix, outRotationMatrix, orientation)
                         }
                     }
 
                     if (heading >= 0f) {
                         lastEmitMs = now
-                        val result = trySend(
-                            CompassResult.Success(
-                                CompassReading(heading, event.accuracy, now)
-                            )
-                        )
-                        if (result.isFailure) {
-                            Log.w(
-                                "CompassRepository",
-                                "Dropped compass reading",
-                                result.exceptionOrNull()
-                            )
-                        }
+                        trySend(CompassResult.Success(CompassReading(heading, event.accuracy, now)))
                     }
                 }
 
@@ -144,87 +98,68 @@ class CompassRepository(
                     return@callbackFlow
                 }
 
-                awaitClose {
-                    try {
-                        sensorManager.unregisterListener(listener)
-                    } catch (e: Exception) {
-                        Log.e("CompassRepository", "Error unregistering listener", e)
-                    }
-                }
+                awaitClose { sensorManager.unregisterListener(listener) }
             } catch (e: Exception) {
-                Log.e("CompassRepository", "Error registering listener", e)
                 trySend(CompassResult.Failure(e))
                 close(e)
             }
         }
 
     private fun selectRotationSensor(): Sensor? {
-        val rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
-        val geomagneticVector = sensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
-        val gameRotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR)
-
-        return when {
-            rotationVector != null -> rotationVector
-            geomagneticVector != null -> geomagneticVector
-            gameRotationVector != null -> {
-                Log.w("CompassRepository", "Using GAME_ROTATION_VECTOR (may drift).")
-                gameRotationVector
-            }
-            else -> null
-        }
+        // اولویت با سنسورهای دقیق‌تر که تحت تاثیر شتاب خطی نیستند
+        val rot = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        val geo = sensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)
+        return rot ?: geo
     }
 
     private fun lowPassFilter(input: FloatArray, output: FloatArray, alpha: Float) {
-        for (i in 0 until 3) {
+        for (i in input.indices) {
             output[i] = alpha * output[i] + (1 - alpha) * input[i]
         }
     }
 
     private fun getDisplayRotation(): Int {
         return try {
-            val dm = context.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager
-            val display =
-                dm?.getDisplay(Display.DEFAULT_DISPLAY)
-                    ?: dm?.displays?.firstOrNull()
-
-            display?.rotation ?: Surface.ROTATION_0
-        } catch (t: Throwable) {
-            // fallback: never crash the app because of rotation
-            try {
-                @Suppress("DEPRECATION")
-                windowManager.defaultDisplay.rotation
-            } catch (_: Throwable) {
-                Surface.ROTATION_0
-            }
+            // در اندرویدهای جدید، WindowManager دقیق‌ترین چرخش را بر اساس کانتکست فعلی می‌دهد
+            @Suppress("DEPRECATION")
+            windowManager.defaultDisplay.rotation
+        } catch (_: Exception) {
+            Surface.ROTATION_0
         }
     }
 
-    private fun remapAndGetHeading(
+    private fun calculateHeading(
         rotation: Int,
         inR: FloatArray,
         outR: FloatArray,
         orientation: FloatArray
-    ): Float? {
+    ): Float {
         var worldAxisX = SensorManager.AXIS_X
         var worldAxisY = SensorManager.AXIS_Y
 
         when (rotation) {
+            Surface.ROTATION_0 -> {
+                worldAxisX = SensorManager.AXIS_X
+                worldAxisY = SensorManager.AXIS_Y
+            }
             Surface.ROTATION_90 -> {
-                worldAxisX = SensorManager.AXIS_Y; worldAxisY = SensorManager.AXIS_MINUS_X
+                worldAxisX = SensorManager.AXIS_Y
+                worldAxisY = SensorManager.AXIS_MINUS_X
             }
-
             Surface.ROTATION_180 -> {
-                worldAxisX = SensorManager.AXIS_MINUS_X; worldAxisY = SensorManager.AXIS_MINUS_Y
+                worldAxisX = SensorManager.AXIS_MINUS_X
+                worldAxisY = SensorManager.AXIS_MINUS_Y
             }
-
             Surface.ROTATION_270 -> {
-                worldAxisX = SensorManager.AXIS_MINUS_Y; worldAxisY = SensorManager.AXIS_X
+                worldAxisX = SensorManager.AXIS_MINUS_Y
+                worldAxisY = SensorManager.AXIS_X
             }
         }
 
         return if (SensorManager.remapCoordinateSystem(inR, worldAxisX, worldAxisY, outR)) {
             SensorManager.getOrientation(outR, orientation)
-            (Math.toDegrees(orientation[0].toDouble()).toFloat() + 360f) % 360f
-        } else null
+            val azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
+            (azimuth + 360f) % 360f
+        } else -1f
     }
 }

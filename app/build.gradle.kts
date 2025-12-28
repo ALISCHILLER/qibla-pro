@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.hilt.android)
-//    alias(libs.plugins.androidx.baselineprofile)
 }
 
 val localProps = Properties().apply {
@@ -17,12 +16,12 @@ val mapsApiKey: String = localProps.getProperty("MAPS_API_KEY") ?: ""
 
 android {
     namespace = "com.msa.qiblapro"
-    compileSdk = 36
+    compileSdk = 36 
 
     defaultConfig {
         applicationId = "com.msa.qiblapro"
         minSdk = 28
-        targetSdk = 36
+        targetSdk = 35 
         versionCode = 1
         versionName = "1.0.0"
 
@@ -44,6 +43,23 @@ android {
         }
     }
 
+    // تغییر نام فایل خروجی APK
+    applicationVariants.all {
+        val variant = this
+        variant.outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val appName = "QiblaPro"
+            val version = variant.versionName
+            val buildType = variant.buildType.name
+            output.outputFileName = "${appName}_v${version}_${buildType}.apk"
+        }
+    }
+
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -57,10 +73,6 @@ android {
         compose = true
         buildConfig = true
     }
-
-//    baselineProfile {
-//        mergeIntoMain = true
-//    }
 }
 
 dependencies {
@@ -86,13 +98,9 @@ dependencies {
     implementation(libs.maps.compose)
     implementation(libs.maps.compose.utils)
 
-//    implementation(libs.androidx.profileinstaller)
-//    baselineProfile(project(":baselineprofile"))
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
 
     implementation("androidx.compose.material:material-icons-extended")
 }

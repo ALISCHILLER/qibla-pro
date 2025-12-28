@@ -12,11 +12,13 @@ import com.google.android.gms.location.Priority
 import com.msa.qiblapro.data.settings.SettingsRepository
 import com.msa.qiblapro.util.GpsUtils
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 
 data class UserLocation(
     val lat: Double,
@@ -31,6 +33,7 @@ sealed interface UserLocationResult {
     data object GpsDisabled : UserLocationResult
     data class Error(val t: Throwable) : UserLocationResult
 }
+
 class LocationRepository(
     private val ctx: Context,
     private val fused: FusedLocationProviderClient,
@@ -41,10 +44,6 @@ class LocationRepository(
         val intervalSec: Int
     )
 
-    /**
-     * ✅ ری‌اکتیو واقعی:
-     * هر تغییر در Settings (low power / interval) => درخواست جدید به FusedLocation
-     */
     fun locationFlow(): Flow<UserLocationResult> {
         return settingsRepo.settingsFlow
             .map { s ->
@@ -58,26 +57,32 @@ class LocationRepository(
     }
 
     private fun requestLocationUpdates(cfg: LocationConfig): Flow<UserLocationResult> = callbackFlow {
-        val hasFine = ContextCompat.checkSelfPermission(
-            ctx,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        val hasCoarse = ContextCompat.checkSelfPermission(
-            ctx,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        if (!hasFine && !hasCoarse) {
-            trySend(UserLocationResult.PermissionDenied)
-            close()
-            return@callbackFlow
-        }
+        // حلقه برای چک کردن مداوم وضعیت GPS وقتی غیرفعال است
+        while (isActive) {
+            val hasFine = ContextCompat.checkSelfPermission(
+                ctx,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            val hasCoarse = ContextCompat.checkSelfPermission(
+                ctx,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            
+            if (!hasFine && !hasCoarse) {
+                trySend(UserLocationResult.PermissionDenied)
+                delay(3000) // هر ۳ ثانیه چک کن
+                continue
+            }
 
-        if (!GpsUtils.isLocationEnabled(ctx)) {
-            trySend(UserLocationResult.GpsDisabled)
-            close()
-            return@callbackFlow
-        }
+            if (!GpsUtils.isLocationEnabled(ctx)) {
+                trySend(UserLocationResult.GpsDisabled)
+                delay(2000) // اگر GPS خاموش بود، هر ۲ ثانیه چک کن
+                continue
+            }
 
+            // اگر همه چیز اوکی بود، از حلقه خارج شو و آپدیت‌ها را شروع کن
+            break
+        }
 
         val priority = if (cfg.lowPower) {
             Priority.PRIORITY_BALANCED_POWER_ACCURACY
